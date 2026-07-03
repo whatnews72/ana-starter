@@ -25,10 +25,13 @@ Starts with a simple menu you can grow by talking:
 ## Run
 
 ```bash
-node server.js            # → http://localhost:8777  (override with PORT=)
+node server.js     # or: npm start   |   node start.js
+# → http://localhost:8777   (override with PORT=)
 ```
 
 No `npm install` needed — the server uses only Node built‑ins (web‑push is optional and stays disabled without `data/vapid.json`).
+
+**GitHub Codespaces:** run `node server.js`, then open the auto‑forwarded **port 8777** (Ports tab → the 🌐 URL). The entry file is `server.js` — `node start.js` and `npm start` also work.
 
 ## Grow it by talking
 

@@ -1,0 +1,9 @@
+{
+  "name": "ANA Starter",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+  "forwardPorts": [8777],
+  "portsAttributes": {
+    "8777": { "label": "ANA dashboard", "onAutoForward": "notify" }
+  },
+  "postAttachCommand": "echo '▶ Run:  node server.js   then open the forwarded port 8777'"
+}

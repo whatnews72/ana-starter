@@ -1,17 +1,17 @@
 {
-  "name": "ana",
+  "name": "ana-starter",
   "version": "1.0.0",
-  "description": "미처리 업무(Hiworks 결재·Gmail 회신·Slack DM·일정)를 **한 화면으로 보면서(watch)**, 하단 [대화하기]로 **비서 에이전트와 대화하며(converse)** 운영하는 ANA. (github.com/tykimos/agent-native-app 하네스로 구축)",
-  "main": "fakechat-bridge.js",
+  "description": "ANA Starter — a base Agent-Native App template (비서·메모). Same look, logo, and runtime as the reference ANA dashboard.",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "node server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["agent-native", "ana", "template", "dashboard", "pwa", "claude-code"],
+  "author": "tykimos",
+  "license": "MIT",
   "type": "commonjs",
-  "dependencies": {
+  "optionalDependencies": {
     "web-push": "^3.6.7"
   }
 }
