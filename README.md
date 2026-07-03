@@ -47,6 +47,32 @@ This is an **agent‑native** app: the coding agent is the runtime. Open the cha
 
 Changes arrive as before/after proposals you approve; state bumps a `version` and every device syncs.
 
+## Connect a coding agent (the full loop)
+
+Running `node server.js` alone gives you the **dashboard + chat UI** — messages you type are queued, but nobody answers yet. The converse loop has four parts:
+
+```
+Dashboard → ② server.js(:8777) → ③ fakechat-bridge.js → ④ fakechat channel(:8787) → ⑤ Claude Code session
+            └──────── in this repo ────────┘             └──── runtime environment (not bundled) ────┘
+```
+
+| Part | What | Where |
+|---|---|---|
+| ② `server.js` | dashboard + chat inbox/feed/approve API | ✅ this repo |
+| ③ `fakechat-bridge.js` | relays the inbox to the fakechat channel | ✅ this repo (run it) |
+| ④ **fakechat channel** (`:8787`) | pushes messages into a Claude session (MCP) | ⛭ Claude Code plugin/channel |
+| ⑤ **Claude Code session** | reads the dashboard, acts, replies via `POST /api/agent` | ⛭ a running session |
+
+**Start ② + ③ together:**
+
+```bash
+npm run all        # = bash run-all.sh  → server.js + fakechat-bridge.js
+```
+
+Then complete the loop by running a **Claude Code session that has the fakechat channel connected**, pointed at this dashboard. That session *is* the coding agent — it receives your messages and answers with rich, approvable proposals. Configure the relay with env vars if needed: `DASH_URL` (default `http://127.0.0.1:8777`), `FAKECHAT_WS` (default `ws://127.0.0.1:8787/ws`).
+
+> **Codespaces note:** a Codespace runs the dashboard fine, but there is no Claude session or fakechat channel inside it by default — chat stays queued. Run the full loop locally (where Claude Code + the fakechat channel live), or bring those into the Codespace. The [ANA harness](https://github.com/tykimos/agent-native-agent) + [`fakechat-dashboard-agent`] building block set up ④/⑤.
+
 ## Structure
 
 ```

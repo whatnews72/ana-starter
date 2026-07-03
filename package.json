@@ -5,7 +5,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "relay": "node fakechat-bridge.js",
+    "all": "bash run-all.sh"
   },
   "keywords": ["agent-native", "ana", "template", "dashboard", "pwa", "claude-code"],
   "author": "tykimos",
