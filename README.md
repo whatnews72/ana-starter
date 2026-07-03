@@ -1,12 +1,25 @@
 <div align="center">
 
-# ANA Starter — 비서 · 메모
+<img src="docs/assets/logo.png" width="88" alt="ANA Starter logo" />
 
-**A base [ANA](https://github.com/tykimos/agent-native-agent) app template.** Same look‑and‑feel and logo as the reference secretary dashboard — pre‑wired so you don't start from scratch.
+# ANA Starter
 
-Starts with a simple menu you can grow by talking:
+### A ready‑to‑run Agent‑Native App you grow by talking.
+
+[![Use this template](https://img.shields.io/badge/use%20this%20template-ana--starter-2F6BFF?style=for-the-badge&logo=github)](https://github.com/tykimos/ana-starter/generate)
+[![Stars](https://img.shields.io/github/stars/tykimos/ana-starter?style=for-the-badge&logo=github&color=2F6BFF)](https://github.com/tykimos/ana-starter/stargazers)
+[![License: MIT](https://img.shields.io/badge/License-MIT-1f6feb?style=for-the-badge)](LICENSE)
+[![Built for Claude Code](https://img.shields.io/badge/built%20for-Claude%20Code-CC785C?style=for-the-badge)](https://claude.com/claude-code)
+
+**English** · [한국어](README.ko.md)
+
+<br/>
+
+![ANA Starter — 비서 · 메모 dashboards](docs/assets/hero.gif)
 
 </div>
+
+A base [**ANA**](https://github.com/tykimos/agent-native-agent) app template — the **same look, logo, and runtime** as the reference dashboard, pre‑wired so you don't start from an empty screen. It boots with a simple menu you grow by talking:
 
 ```
 비서 (Secretary)        메모 (Memo)
@@ -20,7 +33,7 @@ Starts with a simple menu you can grow by talking:
 
 - **Identical design system** — reuses `design-tokens.css`, the ANA logo, PWA icons, manifest, and service worker.
 - **The ANA runtime bridge** — `server.js` (zero‑dependency Node) + `fakechat-bridge.js`: watch a dashboard, converse with a coding agent, approve changes, version‑synced across devices.
-- **A clean starting board** — `데이터/state.json` seeded with a few items per category. Delete them and make it yours.
+- **A clean starting board** — `data/state.json` seeded with a few items per category. Delete them and make it yours.
 
 ## Run
 
@@ -86,6 +99,8 @@ ana-starter/
 ```
 
 Built with **[ANA — Agent‑Native Agent](https://github.com/tykimos/agent-native-agent)** · lifestyle cases in **[ANL](https://github.com/tykimos/agent-native-lifestyle)**.
+
+> If this starter saved you from a blank screen, **⭐ star it** so others can find it.
 
 ## License
 
