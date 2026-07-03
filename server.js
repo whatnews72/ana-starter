@@ -297,10 +297,14 @@ function serveStatic(req, res, url) {
   });
 }
 
+// 접근 키(로그인) 게이트는 기본 OFF — 스타터/개발에선 바로 열려야 자연스럽다.
+// 외부 공개(터널/Codespaces 공개 URL)를 보호하려면 ANA_REQUIRE_AUTH=1 로 켠다.
+const REQUIRE_AUTH = process.env.ANA_REQUIRE_AUTH === "1";
+
 http.createServer((req, res) => {
   const url = new URL(req.url, "http://localhost");
-  // 외부(터널) 접속은 접근 키 필요 — 로컬(브릿지·훅·curl)은 통과
-  if (viaProxy(req) && !OPEN_PATHS.has(url.pathname) && !OPEN_EXT.test(url.pathname) && !authed(req)) {
+  // 켜져 있을 때만: 외부(프록시) 접속에 접근 키 요구 — 로컬(브릿지·훅·curl)은 통과
+  if (REQUIRE_AUTH && viaProxy(req) && !OPEN_PATHS.has(url.pathname) && !OPEN_EXT.test(url.pathname) && !authed(req)) {
     if (url.pathname.startsWith("/api/")) return sendJson(res, 401, { error: "auth required" });
     res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" });
     return res.end(LOGIN_HTML);

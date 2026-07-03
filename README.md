@@ -31,7 +31,9 @@ node server.js     # or: npm start   |   node start.js
 
 No `npm install` needed — the server uses only Node built‑ins (web‑push is optional and stays disabled without `data/vapid.json`).
 
-**GitHub Codespaces:** run `node server.js`, then open the auto‑forwarded **port 8777** (Ports tab → the 🌐 URL). The entry file is `server.js` — `node start.js` and `npm start` also work.
+**GitHub Codespaces:** run `node server.js`, then open the auto‑forwarded **port 8777** (Ports tab → the 🌐 URL). The entry file is `server.js` — `node start.js` and `npm start` also work. It opens straight to the dashboard (no login).
+
+> **Protecting a public URL:** the login gate is **off by default** (so dev/Codespaces just works). To require an access key on externally‑forwarded traffic, run with `ANA_REQUIRE_AUTH=1 node server.js` — the key is the `password` in `data/auth.json` (auto‑generated).
 
 ## Grow it by talking
 
