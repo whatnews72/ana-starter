@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<script>/* iframe(교차출처) 임베드 지원: ?t=토큰으로 로드되면 쿠키 없이도 API 인증 */
+(function(){var t=new URLSearchParams(location.search).get("t");if(!t)return;window.__ANA_T=t;
+var f=window.fetch;window.fetch=function(u,o){try{if(typeof u==="string"&&(u.charAt(0)==="/"||u.slice(0,5)==="data/")&&!/[?&]t=/.test(u)){u+=(u.indexOf("?")<0?"?":"&")+"t="+encodeURIComponent(t);}}catch(e){}return f.call(this,u,o);};})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>비서 · 메모</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#F2F4F6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17181C" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="비서">
+<link rel="icon" href="/logo.png?v=1">
+<link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png?v=1">
+<link rel="stylesheet" href="design-tokens.css">
+<style>
+/* 4개 분류 칩 색상 (alpha .chan-chip 스타일 미러) */
+.chan-할일   { background:#E7EEFF; color:#2F6BFF; }
+.chan-스케줄 { background:#DFF5EA; color:#129A5E; }
+.chan-업무   { background:#EFE8FF; color:#8B5CF6; }
+.chan-공부   { background:#FEF1DC; color:#F59E0B; }
+@media (prefers-color-scheme: dark){
+  .chan-할일{ background:rgba(47,107,255,.22); color:#8FB4FF; }
+  .chan-스케줄{ background:rgba(18,154,94,.22); color:#5FD3A0; }
+  .chan-업무{ background:rgba(139,92,246,.22); color:#C4A8FF; }
+  .chan-공부{ background:rgba(245,158,11,.22); color:#F6C365; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="topnav" id="topnav">
+    <button class="topnav-brand" id="hambBtn"><img class="brand-img" src="/logo.png?v=1" alt="ANA"></button>
+    <button data-top="secretary" class="tab on"><span class="trow"><span class="tnm">비서</span><span class="tbadge" id="badge-secretary"></span></span></button>
+    <button data-top="memo" class="tab"><span class="trow"><span class="tnm">메모</span><span class="tbadge" id="badge-memo"></span></span></button>
+  </nav>
+
+  <!-- VIEW: 현황판(보드) -->
+  <section class="view boardv on" id="boardView">
+    <div class="filterbar" id="filterbar"></div>
+    <div class="sortbar">
+      <button data-sort="urgent" class="on">시급순</button>
+      <button data-sort="new">최신순</button>
+    </div>
+    <div class="donebar" id="donebar"><button id="backLive">‹ 대기로</button><span class="sub">완료 보기</span></div>
+    <main id="board"></main>
+  </section>
+
+  <!-- VIEW: 채팅 (전체화면) -->
+  <section class="view chatv" id="chatView">
+    <div class="feed" id="feed"></div>
+    <div class="typing" id="typing"><span class="dots"><i></i><i></i><i></i></span><span class="ttx">비서 입력 중…</span></div>
+    <div class="composer">
+      <div class="attach-chip" id="attachChip" style="display:none"></div>
+      <textarea id="chatIn" placeholder="메시지 입력" rows="1"></textarea>
+      <div class="cbtns">
+        <button class="cbtn ic" id="toBoard" aria-label="현황판"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></button>
+        <span class="cspacer"></span>
+        <button class="cbtn ic" id="attachBtn" aria-label="파일 첨부"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
+        <button class="cbtn ic" id="micBtn" aria-label="음성 입력"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
+        <button class="send" id="sendBtn" aria-label="보내기"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+      </div>
+      <input type="file" id="fileInput" hidden>
+    </div>
+  </section>
+</div>
+
+<!-- 플로팅 버튼: 좌하단 추가(+), 우하단 채팅 -->
+<button class="fab fabL" id="addBtn" aria-label="추가">+</button>
+<button class="fab fabR" id="chatFab" aria-label="채팅"><svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></button>
+
+<div class="toast" id="toast"></div>
+
+<!-- 상세 팝업 -->
+<div class="scrim" id="scrimD"></div>
+<section class="sheet" id="detail">
+  <div class="grab"></div>
+  <div class="sh-h"><span>상세</span><button class="x" id="closeD">×</button></div>
+  <div class="dt-body">
+    <div class="dt-top" id="dtTop"></div>
+    <div class="dt-title" id="dtTitle"></div>
+    <div class="dt-sec"><div class="lab">메모 · 요약</div><div class="val" id="dtSummary"></div></div>
+  </div>
+  <div class="dt-acts" id="dtActs"></div>
+</section>
+
+<!-- 추가 -->
+<div class="scrim" id="scrimA"></div>
+<section class="sheet" id="addSheet">
+  <div class="grab"></div>
+  <div class="sh-h"><span>추가</span><button class="x" id="closeA">×</button></div>
+  <div class="dt-body">
+    <div class="fld"><label>제목</label><input id="aTitle" placeholder="예: 제안서 최종본 검토" autocomplete="off"></div>
+    <div class="fld"><label>마감일</label><input id="aDue" type="date"></div>
+    <div class="fld"><label>우선순위</label>
+      <div class="seg" id="aPrio"><button data-p="high">높음</button><button data-p="mid" class="on">보통</button><button data-p="low">낮음</button></div>
+    </div>
+    <div class="fld"><label>분류</label>
+      <select id="aCh"><option value="할일">할일</option><option value="스케줄">스케줄</option><option value="업무">업무</option><option value="공부">공부</option></select>
+    </div>
+    <div class="fld"><label>담당/보낸이 (선택)</label><input id="aSender" placeholder="예: 본인 / 송성현" autocomplete="off"></div>
+  </div>
+  <div class="dt-acts">
+    <button class="send" id="aSave">추가</button>
+  </div>
+</section>
+
+<script>
+/* ===== 정보구조 =====
+   top(board): secretary(비서) | memo(메모)
+   sub chip(channel): 할일/스케줄 (비서) · 업무/공부 (메모)
+   item: {id, board, channel, title, sender, priority, due, dueLabel, done, summary} */
+const SUBS = { secretary:[["all","전체"],["할일","할일"],["스케줄","스케줄"]],
+               memo:[["all","전체"],["업무","업무"],["공부","공부"]] };
+const CH2BOARD = { "할일":"secretary","스케줄":"secretary","업무":"memo","공부":"memo" };
+
+let DATA = { version: 0, items: [] };
+let lastMsg = 0, curId = null;
+let curTop = "secretary", filterCh = "all", activeTab = "live";
+let sortMode = localStorage.getItem("ana_sort") || "urgent";
+
+const $ = s => document.querySelector(s);
+function esc(t){ return (t||"").replace(/[&<>]/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;" }[c])); }
+function toast(t){ const e=$("#toast"); e.textContent=t; e.classList.add("on"); clearTimeout(e._t); e._t=setTimeout(()=>e.classList.remove("on"),1900); }
+
+async function loadState(){ try{ const r=await fetch("/api/state"); DATA=await r.json(); render(); if(curId) fillDetail(curId); updateBadge(); }catch(e){} }
+function updateBadge(){
+  try{ if("setAppBadge" in navigator){ const n=(DATA.items||[]).filter(i=>!i.done).length;
+    if(n) navigator.setAppBadge(n).catch(()=>{}); else navigator.clearAppBadge().catch(()=>{}); } }catch(e){}
+}
+
+/* ---- 정렬 ---- */
+function rank(it){ return ({high:3,mid:2,low:1})[it.priority]||1; }
+function dueKey(it){ return it.due ? it.due : "9999"; }
+function sortItems(list){
+  const a=[...list];
+  if(sortMode==="urgent") a.sort((x,y)=> (x.done-y.done) || (rank(y)-rank(x)) || dueKey(x).localeCompare(dueKey(y)) || (x.createdAt||"").localeCompare(y.createdAt||""));
+  else a.sort((x,y)=> (x.done-y.done) || (y.createdAt||"").localeCompare(x.createdAt||""));
+  return a;
+}
+
+/* ---- 서브 칩(필터바) ---- */
+function renderChips(){
+  const subs=SUBS[curTop]||[];
+  $("#filterbar").innerHTML=subs.map(([ch,lab])=>
+    '<button data-ch="'+ch+'"'+(ch===filterCh?' class="on"':'')+'>'+lab+' <span class="fn"></span></button>').join("");
+  $("#filterbar").querySelectorAll("button").forEach(b=> b.onclick=()=>{ filterCh=b.dataset.ch;
+    $("#filterbar").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b)); render(); });
+}
+
+/* ---- 렌더 ---- */
+function render(){
+  const items=(DATA.items||[]).filter(i=>i.board===curTop);
+  const live=items.filter(i=>!i.done), doneL=items.filter(i=>i.done);
+  updateBadges();
+  $("#donebar").classList.toggle("on", activeTab==="done");
+  let base = activeTab==="done" ? doneL : live;
+  $("#filterbar").querySelectorAll("button").forEach(b=>{ const ch=b.dataset.ch;
+    const n = ch==="all" ? base.length : base.filter(i=>i.channel===ch).length;
+    const s=b.querySelector(".fn"); if(s) s.textContent=n; });
+  if(filterCh!=="all") base = base.filter(i=>i.channel===filterCh);
+  const list = sortItems(base);
+  let html;
+  if(!list.length) html='<div class="empty">'+(activeTab==="done"?"완료된 항목이 없습니다":"항목이 없습니다")+'</div>';
+  else { html='<div class="sec">'; for(const it of list) html+=itemHtml(it); html+='</div>'; }
+  $("#board").innerHTML=html;
+  document.querySelectorAll(".item").forEach(el=> el.onclick=()=>openDetail(el.dataset.id));
+}
+function badge(it){ if(!it.dueLabel) return ""; const warm=it.priority==="high";
+  return '<span class="pill '+(warm?"badge-warm":"badge-cool")+'">'+esc(it.dueLabel)+'</span>'; }
+function itemHtml(it){
+  return '<div class="item card '+(it.done?"done":"")+'" data-id="'+it.id+'">'
+   +'<div class="body"><div class="titleline">'
+     +(it.priority==="high"&&!it.done?'<span class="dot-urg"></span>':'')
+     +'<span class="chan-chip chan-'+esc(it.channel)+'">'+esc(it.channel)+'</span>'
+     +'<span class="title">'+esc(it.title)+'</span></div>'
+   +'<div class="sub2"><span class="sender">'+esc(it.sender||"")+'</span>'+badge(it)+'</div>'
+   +'</div></div>';
+}
+function updateBadges(){
+  const set=(id,n)=>{ const el=$(id); if(!el)return; el.textContent=n>99?"99+":n; el.classList.toggle("show", n>0); };
+  const items=DATA.items||[];
+  set("#badge-secretary", items.filter(i=>i.board==="secretary"&&!i.done).length);
+  set("#badge-memo", items.filter(i=>i.board==="memo"&&!i.done).length);
+}
+async function toggleDone(id, done){ const it=(DATA.items||[]).find(x=>x.id===id); if(it){it.done=done; render();}
+  try{ await fetch("/api/done",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id,done})}); }catch(e){} }
+
+/* ---- 상세 ---- */
+function fillDetail(id){
+  const it=(DATA.items||[]).find(x=>x.id===id); if(!it) return;
+  $("#dtTop").innerHTML='<span class="chan-chip chan-'+esc(it.channel)+'">'+esc(it.channel)+'</span><span class="sender">'+esc(it.sender||"")+'</span>'+badge(it);
+  $("#dtTitle").textContent=it.title;
+  $("#dtSummary").textContent=it.summary||"(내용 없음)";
+  let h='<button class="doneb" id="dtDone">'+(it.done?"미완료로":"완료")+'</button><button class="talkb" id="dtTalk">대화</button>';
+  $("#dtActs").innerHTML=h;
+  $("#dtDone").onclick=()=>{ toggleDone(it.id,!it.done); closeDetail(); toast(it.done?"미완료로 변경":"완료 처리됨"); };
+  $("#dtTalk").onclick=()=>itemChat(it);
+}
+function openDetail(id){ curId=id; fillDetail(id); $("#detail").classList.add("on"); $("#scrimD").classList.add("on"); }
+function closeDetail(){ curId=null; $("#detail").classList.remove("on"); $("#scrimD").classList.remove("on"); }
+$("#closeD").onclick=closeDetail; $("#scrimD").onclick=closeDetail;
+
+/* ---- 채팅 첨부(항목 참조) ---- */
+let chatAttach=null;
+function renderAttachChip(){
+  const c=$("#attachChip");
+  if(!chatAttach){ if(pendingFile){ renderFileChip(); } else { c.style.display="none"; c.innerHTML=""; } return; }
+  const it=chatAttach; c.style.display="flex";
+  c.innerHTML='<div class="ac-body"><span class="chan-chip chan-'+esc(it.channel)+'">'+esc(it.channel)+'</span><span class="ac-title">'+esc(it.title)+'</span><span class="ac-sub">'+esc(it.sender||"")+'</span></div><button class="ac-x" id="attachX" aria-label="첨부 제거">×</button>';
+  $("#attachX").onclick=()=>{ chatAttach=null; renderAttachChip(); };
+}
+function itemChat(it){ chatAttach=it; renderAttachChip(); closeDetail(); switchView("chat");
+  const i=$("#chatIn"); i.value=""; growChat(); setTimeout(()=>i.focus(),180); }
+
+/* ---- 뷰 전환(보드 ↔ 채팅) ---- */
+function switchView(v){
+  const board = v!=="chat";
+  $("#chatView").classList.toggle("on",!board);
+  document.body.classList.toggle("chatting",!board);
+  if(board){ $("#boardView").classList.add("on"); render(); }
+  else { $("#boardView").classList.remove("on"); $("#chatFab").classList.remove("live"); setTimeout(()=>{ scrollFeed(); $("#chatIn").focus(); },80); }
+}
+$("#chatFab").onclick=()=>switchView("chat");
+$("#toBoard").onclick=()=>switchView("board");
+
+/* ---- 최상단 탭 ---- */
+function switchTop(t){
+  curTop=t; filterCh="all"; activeTab="live";
+  document.querySelectorAll(".topnav button[data-top]").forEach(b=>b.classList.toggle("on", b.dataset.top===t));
+  $("#chatView").classList.remove("on"); document.body.classList.remove("chatting");
+  $("#boardView").classList.add("on");
+  renderChips(); render(); window.scrollTo(0,0);
+}
+document.querySelectorAll(".topnav button[data-top]").forEach(b=>b.onclick=()=>switchTop(b.dataset.top));
+
+/* ---- 추가 ---- */
+let aPrio="mid";
+function openAdd(){
+  $("#aTitle").value=""; $("#aDue").value=""; $("#aSender").value="";
+  $("#aCh").value = (curTop==="memo") ? "업무" : "할일";
+  aPrio="mid"; document.querySelectorAll("#aPrio button").forEach(b=>b.classList.toggle("on",b.dataset.p==="mid"));
+  $("#addSheet").classList.add("on"); $("#scrimA").classList.add("on"); setTimeout(()=>$("#aTitle").focus(),250);
+}
+function closeAdd(){ $("#addSheet").classList.remove("on"); $("#scrimA").classList.remove("on"); }
+$("#addBtn").onclick=openAdd; $("#closeA").onclick=closeAdd; $("#scrimA").onclick=closeAdd;
+document.querySelectorAll("#aPrio button").forEach(b=> b.onclick=()=>{ aPrio=b.dataset.p;
+  document.querySelectorAll("#aPrio button").forEach(x=>x.classList.toggle("on",x===b)); });
+$("#aSave").onclick=async()=>{
+  const title=$("#aTitle").value.trim(); if(!title){ $("#aTitle").focus(); return; }
+  const due=$("#aDue").value; const ch=$("#aCh").value; const sender=$("#aSender").value.trim()||"본인";
+  let dueLabel=""; if(due){ const p=due.split("-"); dueLabel=(+p[1])+"/"+(+p[2]); }
+  const item={ board:CH2BOARD[ch]||"secretary", channel:ch, sender, title, due, dueLabel, priority:aPrio, done:false, summary:"" };
+  try{ await fetch("/api/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({diff:{add:[item]}})}); }catch(e){}
+  closeAdd(); loadState();
+};
+
+/* ---- 정렬 버튼 ---- */
+document.querySelectorAll(".sortbar button").forEach(b=> b.onclick=()=>{ sortMode=b.dataset.sort; localStorage.setItem("ana_sort",sortMode);
+  document.querySelectorAll(".sortbar button").forEach(x=>x.classList.toggle("on",x===b)); render(); });
+document.querySelector('.sortbar button[data-sort="'+sortMode+'"]')?.classList.add("on");
+document.querySelectorAll('.sortbar button').forEach(x=>{ if(x.dataset.sort!==sortMode) x.classList.remove("on"); });
+$("#backLive").onclick=()=>{ activeTab="live"; render(); };
+
+/* ---- 음성 입력 ---- */
+(function(){
+  const btn=$("#micBtn"); if(!btn) return;
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ btn.style.display="none"; return; }
+  let rec=null, on=false;
+  btn.onclick=()=>{
+    if(on){ on=false; btn.classList.remove("mic-on"); try{rec.stop();}catch(_){} return; }
+    rec=new SR(); rec.lang="ko-KR"; rec.interimResults=true; rec.continuous=false;
+    const i=$("#chatIn"); const base=i.value?(i.value.replace(/\s+$/,"")+" "):"";
+    rec.onresult=e=>{ let t=""; for(const r of e.results) t+=r[0].transcript; i.value=base+t; growChat(); };
+    rec.onend=()=>{ on=false; btn.classList.remove("mic-on"); i.focus(); };
+    rec.onerror=()=>{ on=false; btn.classList.remove("mic-on"); };
+    try{ rec.start(); on=true; btn.classList.add("mic-on"); }catch(_){}
+  };
+})();
+
+/* ---- 파일 첨부 ---- */
+$("#attachBtn").onclick=()=>$("#fileInput").click();
+let pendingFile=null;
+function renderFileChip(){
+  const c=$("#attachChip");
+  if(pendingFile){ c.style.display="flex"; c.innerHTML='📎 <span class="fc-nm">'+esc(pendingFile.name)+'</span><button class="fc-x" onclick="pendingFile=null;renderFileChip()">✕</button>'; }
+  else if(!chatAttach){ c.style.display="none"; c.innerHTML=""; }
+}
+$("#fileInput").onchange=async(e)=>{ const f=e.target.files[0]; if(!f) return;
+  const b64=await new Promise(r=>{ const fr=new FileReader(); fr.onload=()=>r(fr.result.split(",")[1]); fr.readAsDataURL(f); });
+  pendingFile={name:f.name,b64}; renderFileChip(); e.target.value=""; $("#chatIn").focus();
+};
+
+/* ---- 채팅 피드 ---- */
+function scrollFeed(){ const f=$("#feed"); setTimeout(()=>{ if(f) f.scrollTop=f.scrollHeight; },30); }
+function md(t){
+  let s=esc(t||"");
+  s=s.replace(/```[a-z]*\n?([\s\S]*?)```/g,(_,c)=>'<pre class="md-pre">'+c.trim()+'</pre>');
+  s=s.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+|\/[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+  s=s.replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>');
+  s=s.replace(/`([^`\n]+)`/g,'<code class="md-code">$1</code>');
+  s=s.replace(/^\s*[-•]\s+(.+)$/gm,'<div class="md-li">•&nbsp;$1</div>');
+  s=s.replace(/\n/g,'<br>');
+  s=s.replace(/(<\/div>)<br>/g,'$1').replace(/<br>(<div class="md-)/g,'$1').replace(/(<\/pre>)<br>/g,'$1');
+  return s;
+}
+function renderMsg(m){ if(m.id&&m.id<=lastMsg) return; if(m.id) lastMsg=Math.max(lastMsg,m.id); const f=$("#feed");
+  if(m.kind==="proposal"){ f.insertAdjacentHTML("beforeend",propHtml(m)); bindProp(m); }
+  else if(m.kind==="syscall"){ f.insertAdjacentHTML("beforeend",'<div class="syscall"><span class="sc-ic">⟳</span><code>'+esc(m.text)+'</code></div>'); }
+  else if(m.kind==="itemref"){ const r=m.ref||{};
+    f.insertAdjacentHTML("beforeend",'<div class="msg user itemref"><div class="ir-act">'+esc(m.action||"요청")+'</div><div class="ir-chip"><span class="chan-chip chan-'+esc(r.channel)+'">'+esc(r.channel)+'</span><span class="ir-t">'+esc(r.title||"")+'</span><span class="ir-s">'+esc(r.sender||"")+'</span></div>'+(m.text?'<div class="ir-q">'+esc(m.text)+'</div>':'')+'</div>'); }
+  else{ const cls=m.role==="user"?"user":(m.role==="system"?"system":"assistant"); f.insertAdjacentHTML("beforeend",'<div class="msg '+cls+'">'+md(m.text)+'</div>'); }
+  scrollFeed(); }
+function propHtml(m){ const d=m.diff||{}; let rows="";
+  (d.add||[]).forEach(a=>rows+='<div class="row"><span class="k k-add">추가</span><span>'+esc(a.title||JSON.stringify(a))+'</span></div>');
+  (d.update||[]).forEach(u=>rows+='<div class="row"><span class="k k-up">변경</span><span>'+esc((u.title||u.id)+(u.done!==undefined?(u.done?" → 완료":" → 미완료"):""))+'</span></div>');
+  (d.remove||[]).forEach(id=>rows+='<div class="row"><span class="k k-rm">삭제</span><span>'+esc(id)+'</span></div>');
+  const st=m.status==="applied"?'<div class="state">✓ 적용됨</div>':m.status==="rejected"?'<div class="state">취소됨</div>':'';
+  return '<div class="prop '+(m.status||"pending")+'" data-mid="'+m.id+'"><div class="pt">'+esc(m.text||"변경 제안")+'</div>'+rows+'<div class="acts"><button class="ok">승인</button><button class="no">거절</button></div>'+st+'</div>'; }
+function bindProp(m){ const el=document.querySelector('.prop[data-mid="'+m.id+'"]'); if(!el)return; el.querySelector(".ok").onclick=()=>decide(m.id,"approve"); el.querySelector(".no").onclick=()=>decide(m.id,"reject"); }
+async function decide(msgId,d){ try{ await fetch("/api/approve",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({msgId,decision:d})}); }catch(e){} poll(); loadState(); }
+function growChat(){ const i=$("#chatIn"); i.style.height="auto"; i.style.height=Math.min(i.scrollHeight,160)+"px"; }
+async function sendChat(){ const inp=$("#chatIn"); const t=inp.value.trim();
+  if(!t && !chatAttach && !pendingFile) return;
+  let body;
+  if(chatAttach){ const it=chatAttach;
+    const payload="[관련 항목 #"+it.id+" · "+it.channel+" · "+(it.sender||"")+"] "+it.title+(it.summary?(" — "+it.summary):"")+(t?("\n질문: "+t):"");
+    body={text:payload, ref:{id:it.id,channel:it.channel,sender:it.sender,title:it.title}, action:"대화", displayText:t};
+    chatAttach=null; renderAttachChip();
+  } else { body={text:t}; }
+  inp.value=""; growChat();
+  if(pendingFile){ const pf=pendingFile; pendingFile=null; renderFileChip();
+    try{ await fetch("/api/upload",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:pf.name,data:pf.b64,text:t})}); }catch(e){}
+    poll(); return; }
+  try{ await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}); }catch(e){} poll(); }
+$("#sendBtn").onclick=sendChat;
+$("#chatIn").addEventListener("input",growChat);
+$("#chatIn").addEventListener("keydown",e=>{ if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)){ e.preventDefault(); sendChat(); } });
+
+/* ---- 진행 상황(타이핑) ---- */
+function setTyping(st){
+  const on = !!(st && st.text); const t=$("#typing");
+  if(on){ t.querySelector(".ttx").textContent = st.text.replace(/^🔧\s*/,""); t.classList.add("on");
+    if($("#chatView").classList.contains("on")) scrollFeed(); $("#chatFab").classList.add("live"); }
+  else { t.classList.remove("on"); $("#chatFab").classList.remove("live"); }
+}
+
+/* ---- PWA ---- */
+if("serviceWorker" in navigator) navigator.serviceWorker.register("/service-worker.js").catch(()=>{});
+
+/* ---- 폴링 ---- */
+async function poll(){ try{ const r=await fetch("/api/feed?since="+lastMsg); const j=await r.json();
+  (j.messages||[]).forEach(renderMsg); setTyping(j.status);
+  if(j.version&&j.version!==DATA.version) loadState(); }catch(e){} }
+
+renderChips();
+loadState(); poll(); setInterval(poll,2500);
+</script>
+</body>
+</html>

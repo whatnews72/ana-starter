@@ -1,0 +1,6 @@
+node_modules/
+data/auth.json
+data/uploads/
+data/vapid.json
+data/push_subs.json
+.DS_Store
