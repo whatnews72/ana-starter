@@ -15,6 +15,7 @@ const ROOT = __dirname;
 const PORT = process.env.PORT ? +process.env.PORT : 8777;
 const DATA = path.join(ROOT, "data", "state.json");   // { version, items: [...] }
 const FEED = path.join(ROOT, "data", "feed.json");     // { messages, requests, nextMsg, nextReq }
+const EVOLVE = path.join(ROOT, "data", "evolve.json"); // { version, proposals: [{id,type,title,desc,status}] }
 
 const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8",
   ".css": "text/css; charset=utf-8", ".json": "application/json; charset=utf-8",
@@ -25,6 +26,8 @@ function loadFeed() { try { return JSON.parse(fs.readFileSync(FEED, "utf8")); } 
 function saveFeed(s) { fs.writeFileSync(FEED, JSON.stringify(s, null, 2)); }
 function loadData() { try { return JSON.parse(fs.readFileSync(DATA, "utf8")); } catch (e) { return { version: 1, items: [] }; } }
 function saveData(s) { fs.writeFileSync(DATA, JSON.stringify(s, null, 2)); }
+function loadEvolve() { try { return JSON.parse(fs.readFileSync(EVOLVE, "utf8")); } catch (e) { return { version: 1, proposals: [] }; } }
+function saveEvolve(s) { fs.writeFileSync(EVOLVE, JSON.stringify(s, null, 2)); }
 
 let state = loadFeed();
 let sseClients = [], inboxWaiters = [];
@@ -281,6 +284,45 @@ function handleApi(req, res, url) {
       addMsg({ role: "system", kind: "text", text: "변경을 취소했어요." }); saveFeed(state);
       return sendJson(res, 200, { ok: true, applied: false });
     }
+  });
+
+  // 진화(자기개선) 제안 목록 — 무시된 것 제외
+  if (p === "/api/evolve" && req.method === "GET") {
+    const ev = loadEvolve();
+    return sendJson(res, 200, { proposals: (ev.proposals || []).filter(pr => pr.status !== "dismissed") });
+  }
+
+  // 진화 제안 등록(에이전트가 호출) — 배열 또는 단건
+  if (p === "/api/evolve" && req.method === "POST") return readBody(req, b => {
+    const ev = loadEvolve(); if (!Array.isArray(ev.proposals)) ev.proposals = [];
+    const incoming = Array.isArray(b.proposals) ? b.proposals : (b.proposal ? [b.proposal] : []);
+    let count = 0;
+    incoming.forEach(pr => {
+      if (!pr || !pr.title) return;
+      ev.proposals.push({
+        id: pr.id || ("e" + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36)),
+        type: pr.type || "improve", title: pr.title, desc: pr.desc || "", status: "new"
+      });
+      count++;
+    });
+    saveEvolve(ev); return sendJson(res, 200, { ok: true, count });
+  });
+
+  // 진화 제안 처리(대화/수행/무시) — 수행은 채팅 요청으로 비서에게 인계
+  if (p === "/api/evolve-act" && req.method === "POST") return readBody(req, b => {
+    const ev = loadEvolve(); const pr = (ev.proposals || []).find(x => x.id === b.id);
+    if (!pr) return sendJson(res, 404, { error: "not found" });
+    if (b.action === "ignore") { pr.status = "dismissed"; saveEvolve(ev); return sendJson(res, 200, { ok: true }); }
+    if (b.action === "do") {
+      pr.status = "doing"; saveEvolve(ev);
+      const reqId = state.nextReq++;
+      state.requests.push({ id: reqId, text: "[진화 수행 요청] " + pr.title + " — " + pr.desc + "\n이 개선/추가/삭제를 실제 앱에 구현·적용해줘.", status: "new", ts: now() });
+      addMsg({ role: "user", kind: "text", text: "🧬 진화 수행: " + pr.title, reqId });
+      saveFeed(state); wakeInbox();
+      agentStatus = { text: "진화 수행 — 비서가 진행 중…", ts: now() };
+      return sendJson(res, 200, { ok: true });
+    }
+    return sendJson(res, 400, { error: "bad action" });
   });
 
   return sendJson(res, 404, { error: "not found" });
