@@ -28,22 +28,25 @@ var f=window.fetch;window.fetch=function(u,o){try{if(typeof u==="string"&&(u.cha
   .chan-업무{ background:rgba(139,92,246,.22); color:#C4A8FF; }
   .chan-공부{ background:rgba(245,158,11,.22); color:#F6C365; }
 }
-/* 진화 뷰 */
-.ev-head{ padding:6px 2px 12px; }
-.ev-title{ font-size:22px; font-weight:800; letter-spacing:-0.02em; color:var(--text); }
-.ev-sub{ font-size:12.5px; color:var(--text-weak); font-weight:600; margin-top:3px; }
-.ev-snap{ display:block; padding:14px 15px; margin-bottom:10px; font-size:13px; color:var(--text-sub); line-height:1.7; cursor:default; }
-.ev-snap b{ color:var(--text); font-weight:800; }
-.ev-analyze{ width:100%; height:44px; border:0; border-radius:12px; background:var(--blue); color:var(--white);
-  font-size:14px; font-weight:800; margin:2px 0 14px; box-shadow:var(--sh-card); }
-.ev-item{ display:block; padding:13px 15px; margin-bottom:8px; cursor:default; }
-.ev-it-top{ display:flex; align-items:center; gap:7px; }
-.ev-it-title{ font-size:14.5px; font-weight:700; color:var(--text); letter-spacing:-0.01em; }
-.ev-it-desc{ font-size:12.5px; color:var(--text-weak); font-weight:600; margin-top:5px; line-height:1.55; }
-.ev-it-acts{ display:flex; gap:7px; margin-top:11px; }
-.ev-it-acts button{ flex:1; height:36px; border:0; border-radius:10px; font-size:13px; font-weight:800;
-  background:var(--surface-2,#EEF1F4); color:var(--text-sub); }
-.ev-it-acts button.ev-do{ background:var(--blue-weak,#EAF1FF); color:var(--blue-700,#2F6BFF); }
+/* 진화 탭 전용(추가 스타일 — 기존 룩 불변) */
+#evoHead { display: flex; align-items: baseline; gap: 8px; padding-top: 12px; }
+#evoHead .evo-title { font-size: 18px; font-weight: 800; color: var(--text); letter-spacing: -0.02em; }
+#evoHead .evo-lead { font-size: 12.5px; font-weight: 700; color: var(--text-weak); }
+#evoSnap .evo-snap { display: flex; flex-direction: column; gap: 3px; padding: 8px 12px; margin: 8px 4px 0; background: var(--surface-2); border-radius: var(--r-sm, 12px); }
+#evoSnap .evo-snap div { font-size: 12.5px; color: var(--text-sub); line-height: 1.5; }
+#evoSnap .evo-snap .evo-dim { color: var(--text-weak); font-size: 11.5px; }
+.evo-cta { padding: 8px 14px 2px; text-align: right; }
+.evo-cta .send { display: inline-block; width: auto; height: 32px; padding: 0 14px; border-radius: 999px; background: var(--surface-2, #F2F4F6); color: var(--blue); font-size: 12.5px; font-weight: 800; box-shadow: none; border: 1px solid var(--border, #E5E8EB); }
+.evo-card .dt-acts button { height: 30px; padding: 0 14px; font-size: 12.5px; font-weight: 800; border-radius: 999px;
+  border: 0 !important; box-shadow: none !important; }
+.evo-card .dt-acts .evo-talk { background: var(--blue-weak, #EAF1FF) !important; color: var(--blue, #2F6BFF); }
+.evo-card .dt-acts .evo-do { background: var(--blue, #2F6BFF) !important; color: #fff; }
+.evo-card .dt-acts .evo-ig { background: var(--surface-2, #F2F4F6) !important; color: var(--text-weak, #8B95A1); }
+.evo-doing { display: flex; align-items: center; gap: 6px; padding: 10px 0 2px; font-size: 12.5px; font-weight: 700; color: var(--blue, #2F6BFF); }
+.evo-doing::before { content: "⏳"; }
+.evo-card .sub2 { display: block; }
+.evo-card .sub2 .sender { display: block; line-height: 1.55; white-space: normal; }
+.evo-card .dt-acts { padding: 11px 0 0; border-top: 0; }
 </style>
 </head>
 <body>
@@ -86,15 +89,10 @@ var f=window.fetch;window.fetch=function(u,o){try{if(typeof u==="string"&&(u.cha
 
   <!-- VIEW: 진화(자기개선) -->
   <section class="view evolvev" id="evolveView">
-    <div class="sec">
-      <div class="ev-head">
-        <div class="ev-title">진화</div>
-        <div class="ev-sub">이 앱을 스스로 개선합니다 — 기능·데이터·대화를 살펴보고 제안</div>
-      </div>
-      <div class="card ev-snap" id="evSnap"></div>
-      <button class="ev-analyze" id="evAnalyze">에이전트에게 분석 요청</button>
-      <div id="evList"></div>
-    </div>
+    <div class="crm-sub" id="evoHead"><span class="evo-title">진화</span><span class="evo-lead">이 앱을 스스로 개선합니다</span></div>
+    <div class="crm-sub" id="evoSnap"></div>
+    <div class="evo-cta"><button class="send" id="evoAnalyze">에이전트에게 분석 요청</button></div>
+    <main id="evoList"></main>
   </section>
 </div>
 
@@ -387,45 +385,71 @@ function setTyping(st){
 if("serviceWorker" in navigator) navigator.serviceWorker.register("/service-worker.js").catch(()=>{});
 
 /* ---- 진화(자기개선) ---- */
-const EV_TYPES = { improve:["개선","#2F6BFF","#E7EEFF"], add:["추가","#129A5E","#DFF5EA"], remove:["삭제","#E0342B","#FDECEA"] };
-function evBadge(type){ const t=EV_TYPES[type]||EV_TYPES.improve;
-  return '<span style="display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:800;color:'+t[1]+';background:'+t[2]+'">'+t[0]+'</span>'; }
-function renderSnapshot(){
-  const items=DATA.items||[]; const cats={};
-  items.forEach(i=>{ cats[i.channel]=(cats[i.channel]||0)+1; });
-  const catStr=Object.keys(cats).map(c=>c+" "+cats[c]).join(" · ")||"없음";
-  const views="현황판(비서·메모) · 채팅 · 진화";
-  $("#evSnap").innerHTML=
-    '<div><b>기능</b> — 카테고리: 할일·스케줄·업무·공부 / 뷰: '+esc(views)+'</div>'
-   +'<div><b>데이터</b> — 총 '+items.length+'개 · '+esc(catStr)+'</div>'
-   +'<div><b>최근 대화</b> — 피드 메시지 '+lastMsg+'개</div>';
+let EVOLVE_LIST=[], evoFeedN=0;
+const EVO_BADGE={ improve:{l:"개선",css:"background:#EAF1FF;color:#1B64DA;padding:2px 9px;font-size:11px"},
+  add:{l:"추가",css:"background:#E6F7EF;color:#0E8A54;padding:2px 9px;font-size:11px"},
+  remove:{l:"삭제",css:"background:#FDECEA;color:#D4342B;padding:2px 9px;font-size:11px"} };
+const EVO_CATS=["할일","스케줄","업무","공부"];
+function evoSnapshot(){
+  const items=DATA.items||[]; const done=items.filter(i=>i.done).length;
+  const cnt={}; EVO_CATS.forEach(c=>cnt[c]=0);
+  items.forEach(it=>{ if(cnt[it.channel]!==undefined) cnt[it.channel]++; });
+  const catStr=EVO_CATS.map(c=>c+" "+cnt[c]).join(" · ");
+  $("#evoSnap").innerHTML='<div class="evo-snap">'
+    +'<div><b>기능</b> · 카테고리 할일·스케줄·업무·공부 / 뷰 비서·메모·진화·채팅</div>'
+    +'<div><b>데이터</b> · 총 '+items.length+'건 · 완료 '+done+'</div>'
+    +'<div class="evo-dim">'+esc(catStr)+'</div>'
+    +'<div><b>최근 대화</b> · 피드 메시지 '+evoFeedN+'건</div>'
+    +'</div>';
+}
+function evoCardHTML(pr){
+  const b=EVO_BADGE[pr.type]||EVO_BADGE.improve;
+  const foot = pr.status==="doing"
+    ? '<div class="evo-doing">수행 요청 중 — 비서가 진행하고 있습니다</div>'
+    : '<div class="dt-acts"><button class="talkb evo-talk">대화</button><button class="send evo-do">수행</button><button class="doneb evo-ig">무시</button></div>';
+  return '<div class="item card evo-card" data-id="'+esc(pr.id)+'"><div class="body">'
+   +'<div class="titleline"><span class="pill" style="'+b.css+'">'+b.l+'</span><span class="title">'+esc(pr.title)+'</span></div>'
+   +'<div class="sub2"><span class="sender">'+esc(pr.desc||"")+'</span></div>'
+   + foot
+   +'</div></div>';
 }
 async function renderEvolve(){
-  renderSnapshot();
-  try{ const r=await fetch("/api/evolve"); const j=await r.json(); const list=j.proposals||[];
-    if(!list.length){ $("#evList").innerHTML='<div class="empty">제안이 없습니다 — 분석을 요청해보세요</div>'; return; }
-    $("#evList").innerHTML=list.map(p=>
-      '<div class="card ev-item" data-id="'+esc(p.id)+'">'
-       +'<div class="ev-it-top">'+evBadge(p.type)+'<span class="ev-it-title">'+esc(p.title)+'</span></div>'
-       +'<div class="ev-it-desc">'+esc(p.desc||"")+'</div>'
-       +'<div class="ev-it-acts"><button class="ev-talk">대화</button><button class="ev-do">수행</button><button class="ev-ignore">무시</button></div>'
-      +'</div>').join("");
-    list.forEach(p=>{ const el=$('.ev-item[data-id="'+CSS.escape(p.id)+'"]'); if(!el) return;
-      el.querySelector(".ev-talk").onclick=()=>{ switchView("chat");
-        const i=$("#chatIn"); i.value="[진화] "+p.title+": "+(p.desc||""); growChat(); setTimeout(()=>i.focus(),180); };
-      el.querySelector(".ev-do").onclick=async()=>{
-        try{ await fetch("/api/evolve-act",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:p.id,action:"do"})}); }catch(e){}
-        toast("수행 요청됨 — 비서가 진행합니다"); renderEvolve(); };
-      el.querySelector(".ev-ignore").onclick=async()=>{
-        try{ await fetch("/api/evolve-act",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:p.id,action:"ignore"})}); }catch(e){}
-        el.remove(); };
-    });
-  }catch(e){}
+  try{ const fr=await fetch("/api/feed?since=0"); const fj=await fr.json(); evoFeedN=(fj.messages||[]).length; }catch(e){}
+  evoSnapshot();
+  try{ const r=await fetch("/api/evolve"); const j=await r.json(); EVOLVE_LIST=j.proposals||[]; }catch(e){ EVOLVE_LIST=[]; }
+  const el=$("#evoList");
+  if(!EVOLVE_LIST.length){ el.innerHTML='<div class="crm-empty">등록된 제안이 없습니다. 위 버튼으로 분석을 요청해 보세요.</div>'; return; }
+  el.innerHTML='<div class="sec">'+EVOLVE_LIST.map(evoCardHTML).join("")+'</div>';
+  EVOLVE_LIST.forEach(pr=>{ const c=el.querySelector('.evo-card[data-id="'+CSS.escape(pr.id)+'"]'); if(!c) return;
+    const tk=c.querySelector(".evo-talk"); if(tk) tk.onclick=()=>evoTalk(pr);
+    const dd=c.querySelector(".evo-do"); if(dd) dd.onclick=()=>evoAct(pr,"do");
+    const ig=c.querySelector(".evo-ig"); if(ig) ig.onclick=()=>evoAct(pr,"ignore"); });
+  evoCtaState();
 }
-$("#evAnalyze").onclick=async()=>{
-  const text="[진화 분석 요청] 현재 앱의 기능·데이터·최근 대화기록을 살펴보고, 개선/추가/삭제할 기능을 제안해줘. 각 제안을 POST /api/evolve 에 {type:'improve'|'add'|'remove', title, desc} 로 등록해줘.";
-  try{ await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text})}); }catch(e){}
-  toast("분석 요청됨 — 제안이 곧 올라옵니다");
+function evoTalk(pr){
+  chatAttach={id:"evo_"+pr.id, channel:"진화", sender:"앱 개선 제안", title:pr.title, summary:pr.desc};
+  renderAttachChip();
+  switchView("chat");
+  setTimeout(()=>$("#chatIn").focus(),180);
+}
+async function evoAct(pr,action){
+  try{ await fetch("/api/evolve-act",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:pr.id,action})}); }catch(e){}
+  if(action==="do"){ pr.status="doing"; toast("수행 요청됨 — 비서가 진행합니다"); renderEvolve(); poll(); }
+  else { const c=$('#evoList .evo-card[data-id="'+CSS.escape(pr.id)+'"]'); if(c) c.remove();
+    EVOLVE_LIST=EVOLVE_LIST.filter(x=>x.id!==pr.id); toast("제안을 숨겼어요"); }
+}
+function evoCtaState(){
+  const b=$("#evoAnalyze"); if(!b) return;
+  const ts=+localStorage.getItem("evoAnalyzeTs")||0;
+  const n0=+localStorage.getItem("evoAnalyzeN")||0;
+  const pending = ts && (Date.now()-ts < 10*60*1000) && EVOLVE_LIST.length<=n0;
+  if(pending){ b.disabled=true; b.textContent="분석 요청 중… 에이전트가 검토하고 있습니다"; }
+  else { b.disabled=false; b.textContent="에이전트에게 분석 요청"; if(ts && EVOLVE_LIST.length>n0){ localStorage.removeItem("evoAnalyzeTs"); localStorage.removeItem("evoAnalyzeN"); } }
+}
+$("#evoAnalyze").onclick=async()=>{
+  try{ await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:"[진화 분석 요청] 현재 앱의 기능·데이터(할일/스케줄/업무/공부)·최근 대화기록을 살펴보고 개선/추가/삭제할 기능을 제안해줘. 각 제안을 POST /api/evolve 에 {type,title,desc}로 등록해줘."})}); }catch(e){}
+  localStorage.setItem("evoAnalyzeTs",Date.now()); localStorage.setItem("evoAnalyzeN",EVOLVE_LIST.length);
+  evoCtaState(); toast("분석 요청됨");
 };
 
 /* ---- 폴링 ---- */
