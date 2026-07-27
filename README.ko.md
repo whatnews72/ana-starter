@@ -8,7 +8,7 @@
 
 [![Use this template](https://img.shields.io/badge/use%20this%20template-ana--starter-2F6BFF?style=for-the-badge&logo=github)](https://github.com/tykimos/ana-starter/generate)
 [![Stars](https://img.shields.io/github/stars/tykimos/ana-starter?style=for-the-badge&logo=github&color=2F6BFF)](https://github.com/tykimos/ana-starter/stargazers)
-[![License: MIT](https://img.shields.io/badge/License-MIT-1f6feb?style=for-the-badge)](LICENSE)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-1f6feb?style=for-the-badge)](LICENSE)
 [![Built for Claude Code](https://img.shields.io/badge/built%20for-Claude%20Code-CC785C?style=for-the-badge)](https://claude.com/claude-code)
 
 [English](README.md) · **한국어**
@@ -104,4 +104,6 @@ ana-starter/
 
 ## 라이선스(License)
 
-[MIT](LICENSE) © [tykimos](https://github.com/tykimos)
+[AGPL-3.0](LICENSE) © [tykimos](https://github.com/tykimos) · 주식회사 인공지능팩토리
+
+자유롭게 사용·수정·셀프호스팅할 수 있습니다. 다만 수정본을 네트워크 서비스로 제공하면 AGPL 제13조에 따라 소스를 공개해야 합니다. 비공개 제품이나 호스팅 서비스로 쓰시려면 **[상용 라이선스](COMMERCIAL.ko.md)**를 문의해 주세요.

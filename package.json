@@ -9,9 +9,16 @@
     "relay": "node fakechat-bridge.js",
     "all": "bash run-all.sh"
   },
-  "keywords": ["agent-native", "ana", "template", "dashboard", "pwa", "claude-code"],
+  "keywords": [
+    "agent-native",
+    "ana",
+    "template",
+    "dashboard",
+    "pwa",
+    "claude-code"
+  ],
   "author": "tykimos",
-  "license": "MIT",
+  "license": "AGPL-3.0-or-later",
   "type": "commonjs",
   "optionalDependencies": {
     "web-push": "^3.6.7"
