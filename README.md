@@ -86,6 +86,20 @@ Then complete the loop by running a **Claude Code session that has the fakechat 
 
 > **Codespaces note:** a Codespace runs the dashboard fine, but there is no Claude session or fakechat channel inside it by default — chat stays queued. Run the full loop locally (where Claude Code + the fakechat channel live), or bring those into the Codespace. The [ANA harness](https://github.com/tykimos/agent-native-agent) + [`fakechat-dashboard-agent`] building block set up ④/⑤.
 
+### Nothing happens when I send a message
+
+Parts ③④ fail **silently** — no error, no log. Don't guess; bisect. Skip the relay and inject straight into the channel:
+
+```bash
+curl -s -X POST localhost:8787/ -F 'id=diag-1' -F 'text=diagnostic'   # expect: 204
+```
+
+- **It shows up in your session** → the channel is fine; the culprit is the app or the relay. Most common: the WS payload is missing `id` (fakechat drops any message without a truthy `id`), or `fakechat-bridge.js` isn't running.
+- **It doesn't show up** → your session isn't attached to the channel. **Channels only attach at startup** — restart with `claude --channels plugin:fakechat@claude-plugins-official` (list multiple channels inside *one* flag; passing the flag twice drops the earlier one).
+- **Another session answers instead** → port collision. Give each session its own `FAKECHAT_PORT`, and point the relay's `FAKECHAT_WS` at the same port — changing only one side breaks it silently.
+
+Full 4‑segment diagnosis, symptom table, and safe restart order: [connection-troubleshooting.md](https://github.com/tykimos/agent-native-agent/blob/main/skills/realtime-mirror-channel/references/connection-troubleshooting.md).
+
 ## Structure
 
 ```

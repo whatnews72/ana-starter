@@ -86,6 +86,20 @@ npm run all        # = bash run-all.sh  → server.js + fakechat-bridge.js
 
 > **Codespaces 참고:** Codespace는 대시보드는 잘 돌지만 기본적으로 그 안에 Claude 세션·fakechat 채널이 없습니다 — 채팅은 큐에 머뭅니다. 전체 루프는 로컬(Claude Code + fakechat 채널이 있는 곳)에서 돌리거나, 그것들을 Codespace 안으로 가져오세요. [ANA 하네스](https://github.com/tykimos/agent-native-agent) + `fakechat-dashboard-agent` 빌딩블록이 ④/⑤를 구성합니다.
 
+### 메시지를 보내도 아무 반응이 없다면
+
+③④ 구간은 **에러도 로그도 없이 조용히** 실패합니다. 추측하지 말고 이분 탐색하세요 — 릴레이를 건너뛰고 채널에 직접 주입합니다:
+
+```bash
+curl -s -X POST localhost:8787/ -F 'id=diag-1' -F 'text=진단'   # 기대: 204
+```
+
+- **세션에 뜨면** → 채널은 정상, 범인은 앱/릴레이입니다. 가장 흔한 원인: WS 페이로드에 **`id` 누락**(fakechat은 `id` 없는 메시지를 그냥 버립니다), 또는 `fakechat-bridge.js` 미실행.
+- **안 뜨면** → 세션이 채널에 붙어 있지 않은 것입니다. **채널은 기동 시점에만 붙으므로** `claude --channels plugin:fakechat@claude-plugins-official` 로 재기동해야 합니다(여러 채널은 *하나의* 플래그에 나열 — 두 번 주면 앞이 사라집니다).
+- **다른 세션이 대신 받으면** → 포트 충돌입니다. 세션마다 `FAKECHAT_PORT`를 분리하고, 릴레이의 `FAKECHAT_WS`도 같은 포트로 맞추세요 — 한쪽만 바꾸면 조용히 끊깁니다.
+
+4구간 절단점 진단·증상별 원인표·안전 재기동 순서: [connection-troubleshooting.md](https://github.com/tykimos/agent-native-agent/blob/main/skills/realtime-mirror-channel/references/connection-troubleshooting.md)
+
 ## 구조
 
 ```
