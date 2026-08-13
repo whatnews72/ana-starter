@@ -1,0 +1,12 @@
+{"words":[
+{"word":"scaffold","meaning":"(에이전트/시스템을 감싸는) 골격 구조, 발판","example":"The new scaffold lets developers swap out the underlying model without rewriting any code.","exampleKo":"새로운 스캐폴드 덕분에 개발자들은 코드를 다시 작성하지 않고도 기반 모델을 교체할 수 있다."},
+{"word":"decouple","meaning":"분리하다, 독립적으로 만들다","example":"The team decoupled the payment system from the main application to make updates easier.","exampleKo":"그 팀은 업데이트를 쉽게 하기 위해 결제 시스템을 메인 애플리케이션에서 분리했다."},
+{"word":"residual","meaning":"잔여의, 남은; 잔여물","example":"After subtracting the expected trend, only a small residual error remained.","exampleKo":"예상된 추세를 뺀 후에는 작은 잔여 오차만 남았다."},
+{"word":"discrepancy","meaning":"불일치, 차이","example":"There was a discrepancy between the sales report and the actual inventory count.","exampleKo":"매출 보고서와 실제 재고 수량 사이에 불일치가 있었다."},
+{"word":"verifiable","meaning":"검증 가능한","example":"The claim needs to be verifiable through independent testing before we publish it.","exampleKo":"그 주장은 발표하기 전에 독립적인 테스트를 통해 검증 가능해야 한다."},
+{"word":"emergent","meaning":"새롭게 나타나는, 발현하는","example":"Complex group behavior can be an emergent property of simple individual rules.","exampleKo":"복잡한 집단 행동은 단순한 개별 규칙에서 발현하는 특성일 수 있다."},
+{"word":"heuristic","meaning":"발견적인, 어림짐작의; 어림법","example":"Instead of an exact algorithm, the app relies on a simple heuristic to estimate delivery time.","exampleKo":"그 앱은 정확한 알고리즘 대신 배송 시간을 추정하는 간단한 어림법(휴리스틱)에 의존한다."},
+{"word":"latency","meaning":"지연 시간, 지연","example":"Reducing network latency made the video call feel much smoother.","exampleKo":"네트워크 지연 시간을 줄이자 화상 통화가 훨씬 매끄럽게 느껴졌다."},
+{"word":"implicit","meaning":"암묵적인, 내포된","example":"There was an implicit agreement that whoever cooked dinner wouldn't have to do the dishes.","exampleKo":"저녁을 요리한 사람은 설거지를 하지 않아도 된다는 암묵적인 합의가 있었다."},
+{"word":"plausible","meaning":"그럴듯한, 타당해 보이는","example":"He offered a plausible explanation for why the meeting had been delayed.","exampleKo":"그는 회의가 지연된 이유에 대해 그럴듯한 설명을 내놓았다."}
+]}

@@ -16,6 +16,8 @@ const PORT = process.env.PORT ? +process.env.PORT : 8777;
 const DATA = path.join(ROOT, "data", "state.json");   // { version, items: [...] }
 const FEED = path.join(ROOT, "data", "feed.json");     // { messages, requests, nextMsg, nextReq }
 const EVOLVE = path.join(ROOT, "data", "evolve.json"); // { version, proposals: [{id,type,title,desc,status}] }
+const VOCAB = path.join(ROOT, "data", "vocab.json");   // { version, words: [{id,word,meaning,example,box,streak,nextReview}] }
+const VOCAB_BOX_DAYS = [1, 1, 2, 4, 7, 14]; // 라이트너 박스(1~6) → 정답 시 다음 복습까지 일수
 
 const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8",
   ".css": "text/css; charset=utf-8", ".json": "application/json; charset=utf-8",
@@ -28,6 +30,9 @@ function loadData() { try { return JSON.parse(fs.readFileSync(DATA, "utf8")); } 
 function saveData(s) { fs.writeFileSync(DATA, JSON.stringify(s, null, 2)); }
 function loadEvolve() { try { return JSON.parse(fs.readFileSync(EVOLVE, "utf8")); } catch (e) { return { version: 1, proposals: [] }; } }
 function saveEvolve(s) { fs.writeFileSync(EVOLVE, JSON.stringify(s, null, 2)); }
+function loadVocab() { try { return JSON.parse(fs.readFileSync(VOCAB, "utf8")); } catch (e) { return { version: 1, words: [] }; } }
+function saveVocab(s) { fs.writeFileSync(VOCAB, JSON.stringify(s, null, 2)); }
+function todayStr() { return new Date().toISOString().slice(0, 10); }
 
 let state = loadFeed();
 let sseClients = [], inboxWaiters = [];
@@ -114,6 +119,57 @@ function handleApi(req, res, url) {
   // 대시보드 데이터
   if (p === "/api/state" && req.method === "GET") return sendJson(res, 200, loadData());
 
+  // 영단어 학습 — 목록 + 오늘 복습 대상(due)
+  if (p === "/api/vocab" && req.method === "GET") {
+    const v = loadVocab(); const today = todayStr();
+    const due = (v.words || []).filter(w => !w.nextReview || w.nextReview <= today);
+    return sendJson(res, 200, { version: v.version || 1, words: v.words || [], due });
+  }
+  // 영단어 추가(비서/에이전트 또는 사용자가 직접) — {words:[{word,meaning,example}]} 또는 {word,meaning,example}
+  if (p === "/api/vocab/add" && req.method === "POST") return readBody(req, b => {
+    const v = loadVocab(); const today = todayStr();
+    const list = Array.isArray(b.words) ? b.words : (b.word ? [b] : []);
+    let added = 0;
+    list.forEach(w => {
+      if (!w || !(w.word || "").toString().trim()) return;
+      v.words = v.words || [];
+      v.words.push({ id: "w" + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36),
+        word: (w.word || "").toString().trim(), meaning: (w.meaning || "").toString().trim(),
+        example: (w.example || "").toString().trim(), exampleKo: (w.exampleKo || "").toString().trim(),
+        box: 1, streak: 0, nextReview: today, addedAt: today });
+      added++;
+    });
+    v.version = (v.version || 1) + 1; saveVocab(v);
+    return sendJson(res, 200, { ok: true, added, version: v.version });
+  });
+  // 영단어 복습 결과 반영(라이트너 박스 1~6단계, 정답이면 간격 늘리고 오답이면 1단계로 리셋)
+  if (p === "/api/vocab/review" && req.method === "POST") return readBody(req, b => {
+    const v = loadVocab(); const w = (v.words || []).find(x => x.id === b.id);
+    if (!w) return sendJson(res, 404, { error: "not found" });
+    const today = todayStr();
+    if (b.correct) { w.box = Math.min((w.box || 1) + 1, VOCAB_BOX_DAYS.length); w.streak = (w.streak || 0) + 1; }
+    else { w.box = 1; w.streak = 0; }
+    const nd = new Date(); nd.setDate(nd.getDate() + VOCAB_BOX_DAYS[(w.box || 1) - 1]);
+    w.nextReview = nd.toISOString().slice(0, 10); w.lastReview = today;
+    v.version = (v.version || 1) + 1; saveVocab(v);
+    return sendJson(res, 200, { ok: true, word: w, version: v.version });
+  });
+  // 영단어 삭제
+  if (p === "/api/vocab/remove" && req.method === "POST") return readBody(req, b => {
+    const v = loadVocab(); const before = (v.words || []).length;
+    v.words = (v.words || []).filter(x => x.id !== b.id);
+    if (v.words.length < before) { v.version = (v.version || 1) + 1; saveVocab(v); }
+    return sendJson(res, 200, { ok: true, version: v.version });
+  });
+  // 영단어 내용 수정(뜻/예문/예문 해석) — 복습 상태(box/streak/nextReview)는 건드리지 않음
+  if (p === "/api/vocab/update" && req.method === "POST") return readBody(req, b => {
+    const v = loadVocab(); const w = (v.words || []).find(x => x.id === b.id);
+    if (!w) return sendJson(res, 404, { error: "not found" });
+    ["meaning", "example", "exampleKo"].forEach(f => { if (b[f] !== undefined) w[f] = (b[f] || "").toString().trim(); });
+    v.version = (v.version || 1) + 1; saveVocab(v);
+    return sendJson(res, 200, { ok: true, word: w, version: v.version });
+  });
+
   // 채팅 피드(+version 동기화). 폴링이 항상 이걸로 데이터 변화도 감지한다.
   if (p === "/api/feed" && req.method === "GET") {
     const since = +(url.searchParams.get("since") || 0);
@@ -158,6 +214,16 @@ function handleApi(req, res, url) {
     sendPush({ title: b.title || "비서 업무 현황판", body: b.body || "", url: b.url || "/", tag: b.tag || "ana" });
     return sendJson(res, 200, { ok: true, subs: loadSubs().length });
   });
+  // 영단어: 오늘 복습분 요약 푸시 발송(매일 예약 작업이 호출)
+  if (p === "/api/vocab/push-today" && req.method === "POST") {
+    const v = loadVocab(); const today = todayStr();
+    const due = (v.words || []).filter(w => !w.nextReview || w.nextReview <= today);
+    if (due.length) {
+      const preview = due.slice(0, 3).map(w => w.word).join(", ");
+      sendPush({ title: "오늘의 영단어 " + due.length + "개", body: preview + (due.length > 3 ? " 외 " + (due.length - 3) + "개" : ""), url: "/", tag: "vocab" });
+    }
+    return sendJson(res, 200, { ok: true, due: due.length, subs: loadSubs().length });
+  }
 
   // 비서 진행 상황 표시(입력 중/처리 중) — 훅이 POST
   if (p === "/api/status" && req.method === "POST") return readBody(req, b => {

@@ -47,6 +47,38 @@ var f=window.fetch;window.fetch=function(u,o){try{if(typeof u==="string"&&(u.cha
 .evo-card .sub2 { display: block; }
 .evo-card .sub2 .sender { display: block; line-height: 1.55; white-space: normal; }
 .evo-card .dt-acts { padding: 11px 0 0; border-top: 0; }
+/* 영단어 탭 전용 */
+#vocabMain { padding: 4px 4px 24px; }
+.vcard { background: var(--surface); border-radius: var(--r-lg,20px); box-shadow: var(--sh-card); padding: 32px 20px; margin: 10px 4px 16px; text-align: center; min-height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+.vword-row { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.vcard .vword { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); }
+.vspeak { width: 32px; height: 32px; border-radius: 50%; background: var(--surface-2); color: var(--text-sub); font-size: 15px; display: flex; align-items: center; justify-content: center; flex: none; }
+.vspeak:active { background: var(--blue); color: #fff; }
+.vlist .vli .vspeak { width: 24px; height: 24px; font-size: 12px; }
+.vcard .vmeaning { font-size: 16px; font-weight: 700; color: var(--blue); }
+.vcard .vexample { font-size: 13px; color: var(--text-sub); line-height: 1.5; }
+.vexample-row { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 0 6px; }
+.vspeak-sm { width: 24px; height: 24px; font-size: 12px; }
+.vexample-ko { font-size: 12px; color: var(--text-weak); line-height: 1.5; padding: 0 6px; }
+.vcard .vflip { height: 40px; padding: 0 18px; border-radius: 999px; background: var(--surface-2); color: var(--text-sub); font-size: 13px; font-weight: 700; }
+.vcard .vrow { display: flex; gap: 10px; width: 100%; margin-top: 4px; }
+.vcard .vbtn { flex: 1; height: 46px; border-radius: 14px; font-size: 14px; font-weight: 800; }
+.vcard .vno { background: var(--danger-bg); color: var(--danger); }
+.vcard .vyes { background: var(--blue); color: #fff; }
+.vprog { text-align: center; font-size: 12.5px; color: var(--text-weak); font-weight: 700; margin: 2px 0 0; }
+.vdone { text-align: center; padding: 28px 10px; color: var(--text-sub); font-size: 14px; font-weight: 700; }
+.vaddwrap { padding: 10px 4px 0; }
+.vaddtoggle { width: 100%; height: 40px; border-radius: 12px; background: var(--surface-2); color: var(--text-sub); font-size: 13px; font-weight: 700; }
+.vaddform { display: none; flex-direction: column; gap: 8px; margin-top: 8px; background: var(--surface); border-radius: var(--r-sm,12px); padding: 12px; box-shadow: var(--sh-card); }
+.vaddform.on { display: flex; }
+.vaddform input { height: 42px; border-radius: 10px; border: 1.5px solid var(--line); padding: 0 12px; font-size: 14px; background: var(--surface-2); color: var(--text); outline: none; }
+.vaddform input:focus { border-color: var(--blue); }
+.vlist { margin-top: 14px; }
+.vlist .vli { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; background: var(--surface); margin-bottom: 6px; box-shadow: var(--sh-card); }
+.vlist .vli .vw { font-weight: 800; font-size: 13.5px; color: var(--text); }
+.vlist .vli .vm { font-size: 12px; color: var(--text-sub); flex: 1; }
+.vlist .vli .vbox { font-size: 10.5px; color: var(--text-weak); }
+.vlist .vli .vx { width: 26px; height: 26px; border-radius: 50%; color: var(--text-weak); font-size: 15px; }
 </style>
 </head>
 <body>
@@ -55,6 +87,7 @@ var f=window.fetch;window.fetch=function(u,o){try{if(typeof u==="string"&&(u.cha
     <button class="topnav-brand" id="hambBtn"><img class="brand-img" src="/logo.png?v=1" alt="ANA"></button>
     <button data-top="secretary" class="tab on"><span class="trow"><span class="tnm">비서</span><span class="tbadge" id="badge-secretary"></span></span></button>
     <button data-top="memo" class="tab"><span class="trow"><span class="tnm">메모</span><span class="tbadge" id="badge-memo"></span></span></button>
+    <button data-top="vocab" class="tab"><span class="trow"><span class="tnm">영단어</span><span class="tbadge" id="badge-vocab"></span></span></button>
     <button data-top="evolve" class="tab"><span class="trow"><span class="tnm">진화</span></span></button>
   </nav>
 
@@ -85,6 +118,13 @@ var f=window.fetch;window.fetch=function(u,o){try{if(typeof u==="string"&&(u.cha
       </div>
       <input type="file" id="fileInput" hidden>
     </div>
+  </section>
+
+  <!-- VIEW: 영단어 학습 -->
+  <section class="view vocabv" id="vocabView">
+    <div class="crm-sub" id="vocabHead"><span class="evo-title">영단어</span><span class="evo-lead" id="vocabLead">오늘 복습할 단어를 확인하세요</span></div>
+    <div class="evo-cta"><button class="send" id="vocabPushBtn">🔔 매일 알림 켜기</button></div>
+    <main id="vocabMain"></main>
   </section>
 
   <!-- VIEW: 진화(자기개선) -->
@@ -149,9 +189,10 @@ let DATA = { version: 0, items: [] };
 let lastMsg = 0, curId = null;
 let curTop = "secretary", filterCh = "all", activeTab = "live";
 let sortMode = localStorage.getItem("ana_sort") || "urgent";
+let VOCAB_ALL = [], VOCAB_DUE = [], vocabQueue = [], vocabIdx = 0, vocabFlip = false, vocabTick = 0;
 
 const $ = s => document.querySelector(s);
-function esc(t){ return (t||"").replace(/[&<>]/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;" }[c])); }
+function esc(t){ return String(t==null?"":t).replace(/[&<>]/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;" }[c])); }
 function toast(t){ const e=$("#toast"); e.textContent=t; e.classList.add("on"); clearTimeout(e._t); e._t=setTimeout(()=>e.classList.remove("on"),1900); }
 
 async function loadState(){ try{ const r=await fetch("/api/state"); DATA=await r.json(); render(); if(curId) fillDetail(curId); updateBadge(); }catch(e){} }
@@ -249,8 +290,12 @@ function switchView(v){
   const board = v!=="chat";
   $("#chatView").classList.toggle("on",!board);
   document.body.classList.toggle("chatting",!board);
-  if(board){ if(curTop==="evolve"){ $("#evolveView").classList.add("on"); renderEvolve(); } else { $("#boardView").classList.add("on"); render(); } }
-  else { $("#boardView").classList.remove("on"); $("#chatFab").classList.remove("live"); setTimeout(()=>{ scrollFeed(); $("#chatIn").focus(); },80); }
+  if(board){
+    if(curTop==="evolve"){ $("#evolveView").classList.add("on"); renderEvolve(); }
+    else if(curTop==="vocab"){ $("#vocabView").classList.add("on"); fetchVocab(); }
+    else { $("#boardView").classList.add("on"); render(); }
+  }
+  else { $("#boardView").classList.remove("on"); $("#evolveView").classList.remove("on"); $("#vocabView").classList.remove("on"); $("#chatFab").classList.remove("live"); setTimeout(()=>{ scrollFeed(); $("#chatIn").focus(); },80); }
 }
 $("#chatFab").onclick=()=>switchView("chat");
 $("#toBoard").onclick=()=>switchView("board");
@@ -260,10 +305,12 @@ function switchTop(t){
   curTop=t; filterCh="all"; activeTab="live";
   document.querySelectorAll(".topnav button[data-top]").forEach(b=>b.classList.toggle("on", b.dataset.top===t));
   $("#chatView").classList.remove("on"); document.body.classList.remove("chatting");
-  const ev = t==="evolve";
+  const ev = t==="evolve", vc = t==="vocab";
   $("#evolveView").classList.toggle("on", ev);
-  $("#boardView").classList.toggle("on", !ev);
+  $("#vocabView").classList.toggle("on", vc);
+  $("#boardView").classList.toggle("on", !ev && !vc);
   if(ev){ renderEvolve(); }
+  else if(vc){ vocabIdx=0; vocabFlip=false; fetchVocab(); }
   else { renderChips(); render(); }
   window.scrollTo(0,0);
 }
@@ -452,15 +499,156 @@ $("#evoAnalyze").onclick=async()=>{
   evoCtaState(); toast("분석 요청됨");
 };
 
+/* ---- 영단어 학습 ---- */
+function updateVocabBadge(){ const el=$("#badge-vocab"); if(!el) return;
+  const n=VOCAB_DUE.length; el.textContent=n>99?"99+":n; el.classList.toggle("show", n>0); }
+function speakWord(text){
+  if(!("speechSynthesis" in window) || !text){ toast("이 브라우저는 발음 재생을 지원하지 않아요"); return; }
+  try{
+    const ss=window.speechSynthesis;
+    const doSpeak=()=>{
+      try{
+        ss.cancel();
+        const u=new SpeechSynthesisUtterance(text);
+        u.lang="en-US"; u.rate=0.9;
+        const voices=ss.getVoices();
+        const en=voices.find(v=>v.lang&&v.lang.toLowerCase().startsWith("en"));
+        if(en) u.voice=en;
+        u.onerror=()=>toast("발음 재생에 실패했어요 (기기 TTS 설정을 확인해보세요)");
+        ss.speak(u);
+      }catch(e){ toast("발음 재생에 실패했어요"); }
+    };
+    if(ss.getVoices().length===0){
+      let done=false;
+      ss.onvoiceschanged=()=>{ if(done)return; done=true; doSpeak(); };
+      setTimeout(()=>{ if(!done){ done=true; doSpeak(); } },300);
+    } else { doSpeak(); }
+  }catch(e){ toast("발음 재생에 실패했어요"); }
+}
+function bindVocabSpeak(){
+  document.querySelectorAll("[data-speak]").forEach(b=> b.onclick=(e)=>{ e.stopPropagation(); speakWord(b.dataset.speak); });
+}
+async function fetchVocab(renderIt){
+  try{ const r=await fetch("/api/vocab"); const j=await r.json();
+    VOCAB_ALL=j.words||[]; VOCAB_DUE=j.due||[]; updateVocabBadge();
+    // renderIt===false means "just refresh badge/list in the background" (called
+    // from poll() and after answering a card) — must NOT touch the in-progress
+    // review queue/index, or the active card silently shifts under the user
+    // (this was the "뜻 보기 → skips a card" bug: the queue array got swapped
+    // out from under a stale vocabIdx).
+    if(renderIt!==false){
+      vocabQueue=VOCAB_DUE.slice(); vocabIdx=0; vocabFlip=false;
+      if(curTop==="vocab") renderVocab();
+    }
+  }catch(e){}
+}
+function vocabAddHtml(){
+  return '<div class="vaddwrap"><button class="vaddtoggle" id="vAddToggle">+ 단어 추가</button>'
+    +'<div class="vaddform" id="vAddForm">'
+    +'<input id="vWord" placeholder="단어 (예: diligent)" autocomplete="off">'
+    +'<input id="vMeaning" placeholder="뜻 (예: 부지런한)" autocomplete="off">'
+    +'<input id="vExample" placeholder="예문 (선택)" autocomplete="off">'
+    +'<input id="vExampleKo" placeholder="예문 해석 (선택)" autocomplete="off">'
+    +'<button class="send" id="vAddSave">추가</button>'
+    +'</div></div>';
+}
+function bindVocabAdd(){
+  const t=$("#vAddToggle"); if(!t) return;
+  t.onclick=()=>{ $("#vAddForm").classList.toggle("on"); };
+  $("#vAddSave").onclick=async()=>{
+    const word=$("#vWord").value.trim(); if(!word) return;
+    const meaning=$("#vMeaning").value.trim(), example=$("#vExample").value.trim(), exampleKo=$("#vExampleKo").value.trim();
+    try{ await fetch("/api/vocab/add",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({word,meaning,example,exampleKo})}); }catch(e){}
+    $("#vWord").value=""; $("#vMeaning").value=""; $("#vExample").value=""; $("#vExampleKo").value="";
+    toast("단어를 추가했어요"); fetchVocab();
+  };
+}
+function vocabListHtml(){
+  if(!VOCAB_ALL.length) return "";
+  let h='<div class="vlist">';
+  VOCAB_ALL.slice().sort((a,b)=>(a.nextReview||"").localeCompare(b.nextReview||"")).forEach(w=>{
+    h+='<div class="vli" data-id="'+esc(w.id)+'"><button class="vspeak" data-speak="'+esc(w.word)+'" aria-label="발음 듣기">🔊</button><span class="vw">'+esc(w.word)+'</span><span class="vm">'+esc(w.meaning||"")+'</span><span class="vbox">Lv'+String(w.box||1)+'</span><button class="vx" data-vx="'+esc(w.id)+'" aria-label="삭제">×</button></div>';
+  });
+  h+='</div>'; return h;
+}
+function bindVocabList(){
+  document.querySelectorAll('[data-vx]').forEach(b=> b.onclick=async()=>{
+    try{ await fetch("/api/vocab/remove",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:b.dataset.vx})}); }catch(e){}
+    fetchVocab();
+  });
+}
+function renderVocab(){
+  const m=$("#vocabMain"); if(!m) return;
+  if(vocabIdx>=vocabQueue.length){
+    m.innerHTML=(vocabQueue.length?'<div class="vdone">오늘 복습 끝! 🎉 '+vocabQueue.length+'개 완료</div>':'<div class="vdone">오늘 복습할 단어가 없어요</div>')+vocabAddHtml()+vocabListHtml();
+    bindVocabAdd(); bindVocabList(); bindVocabSpeak(); return;
+  }
+  const w=vocabQueue[vocabIdx];
+  let html='<div class="vprog">'+(vocabIdx+1)+' / '+vocabQueue.length+'</div><div class="vcard"><div class="vword-row"><div class="vword">'+esc(w.word)+'</div><button class="vspeak" data-speak="'+esc(w.word)+'" aria-label="발음 듣기">🔊</button></div>';
+  if(vocabFlip){
+    html+='<div class="vmeaning">'+esc(w.meaning||"(뜻 미등록)")+'</div>';
+    if(w.example) html+='<div class="vexample-row"><div class="vexample">'+esc(w.example)+'</div><button class="vspeak vspeak-sm" data-speak="'+esc(w.example)+'" aria-label="예문 발음 듣기">🔊</button></div>';
+    if(w.exampleKo) html+='<div class="vexample-ko">'+esc(w.exampleKo)+'</div>';
+    html+='<div class="vrow"><button class="vbtn vno" id="vNo">다시</button><button class="vbtn vyes" id="vYes">기억남</button></div>';
+  } else { html+='<button class="vflip" id="vFlip">뜻 보기</button>'; }
+  html+='</div>'+vocabAddHtml()+vocabListHtml();
+  m.innerHTML=html;
+  if(vocabFlip){
+    $("#vNo").onclick=(e)=>{ e.preventDefault(); e.stopPropagation(); vocabGuarded(()=>vocabAnswer(w,false)); };
+    $("#vYes").onclick=(e)=>{ e.preventDefault(); e.stopPropagation(); vocabGuarded(()=>vocabAnswer(w,true)); };
+  } else {
+    $("#vFlip").onclick=(e)=>{ e.preventDefault(); e.stopPropagation(); vocabGuarded(()=>{ vocabFlip=true; renderVocab(); }); };
+  }
+  bindVocabAdd(); bindVocabList(); bindVocabSpeak();
+}
+/* 모바일에서 버튼이 탭 위치 그대로 교체되면서 같은 탭이 새 버튼까지 이어서 누르는
+   문제(고스트 클릭) 방지 — 렌더 직후 짧게 클릭을 무시한다. */
+let vocabLock=false;
+function vocabGuarded(fn){
+  if(vocabLock) return;
+  vocabLock=true; fn();
+  setTimeout(()=>{ vocabLock=false; },350);
+}
+async function vocabAnswer(w,correct){
+  try{ await fetch("/api/vocab/review",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:w.id,correct})}); }catch(e){}
+  vocabIdx++; vocabFlip=false; renderVocab(); fetchVocab(false);
+}
+
+/* ---- 폰 알림(Web Push) ---- */
+function urlBase64ToUint8Array(base64String){
+  const padding="=".repeat((4-base64String.length%4)%4);
+  const base64=(base64String+padding).replace(/-/g,"+").replace(/_/g,"/");
+  const raw=atob(base64); return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)));
+}
+async function setupPush(){
+  try{
+    if(!("serviceWorker" in navigator) || !("PushManager" in window)){ toast("이 브라우저는 알림을 지원하지 않아요"); return; }
+    const reg=await navigator.serviceWorker.ready;
+    if(Notification.permission==="denied"){ toast("알림이 차단되어 있어요 (브라우저 설정에서 허용해주세요)"); return; }
+    const perm=Notification.permission==="granted" ? "granted" : await Notification.requestPermission();
+    if(perm!=="granted"){ toast("알림을 허용해주셔야 매일 알림을 받을 수 있어요"); return; }
+    let sub=await reg.pushManager.getSubscription();
+    if(!sub){
+      const r=await fetch("/api/vapid-public"); const {publicKey}=await r.json();
+      if(!publicKey){ toast("서버에 알림 키가 설정되지 않았어요"); return; }
+      sub=await reg.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey: urlBase64ToUint8Array(publicKey) });
+    }
+    await fetch("/api/push-subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(sub)});
+    toast("알림이 켜졌어요 🔔");
+  }catch(e){ toast("알림 설정 중 문제가 있었어요"); }
+}
+$("#vocabPushBtn")?.addEventListener("click", setupPush);
+
 /* ---- 폴링 ---- */
 let evTick=0;
 async function poll(){ try{ const r=await fetch("/api/feed?since="+lastMsg); const j=await r.json();
   const had=lastMsg; (j.messages||[]).forEach(renderMsg); setTyping(j.status);
   if(j.version&&j.version!==DATA.version) loadState();
-  if(curTop==="evolve" && (lastMsg!==had || (++evTick%2===0))) renderEvolve(); }catch(e){} }
+  if(curTop==="evolve" && (lastMsg!==had || (++evTick%2===0))) renderEvolve();
+  if(curTop!=="vocab" && (++vocabTick%4===0)) fetchVocab(false); }catch(e){} }
 
 renderChips();
-loadState(); poll(); setInterval(poll,2500);
+loadState(); poll(); setInterval(poll,2500); fetchVocab(false);
 </script>
 </body>
 </html>
