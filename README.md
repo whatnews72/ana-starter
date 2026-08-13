@@ -4,6 +4,10 @@
 
 # ANA Starter
 
+> **Fork from** [tykimos/ana-starter](https://github.com/tykimos/ana-starter)  
+> 
+> ✅ Customized with local feed management, state persistence, and enhanced UI for personal workflow
+
 ### A ready‑to‑run Agent‑Native App you grow by talking.
 
 [![Use this template](https://img.shields.io/badge/use%20this%20template-ana--starter-2F6BFF?style=for-the-badge&logo=github)](https://github.com/tykimos/ana-starter/generate)
@@ -77,6 +81,20 @@ Dashboard → ② server.js(:8777) → ③ fakechat-bridge.js → ④ fakechat c
 | ⑤ **Claude Code session** | reads the dashboard, acts, replies via `POST /api/agent` | ⛭ a running session |
 
 **Start ② + ③ together:**
+
+---
+
+## 본인 기여 사항 (Personal Contributions)
+
+This is a customized fork of [tykimos/ana-starter](https://github.com/tykimos/ana-starter). The following features were added for personal workflow automation:
+
+- ✅ **Local Feed Management** (`data/feed.json`) — Store and manage personal daily vocabulary data locally
+- ✅ **State Persistence** (`data/state.json`) — Enhanced state tracking with automatic sync across sessions
+- ✅ **UI Improvements** (`index.html` +202 lines) — Extended dashboard interface with additional controls and widgets
+- ✅ **Server Enhancements** (`server.js` +66 lines) — Added endpoints for vocabulary management and feed operations
+- ✅ **Automation Scripts** — Batch processing for daily vocabulary updates with auto-push capability
+
+This fork maintains full compatibility with the original ANA runtime while adding personal productivity features.
 
 ```bash
 npm run all        # = bash run-all.sh  → server.js + fakechat-bridge.js
