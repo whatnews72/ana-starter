@@ -1,0 +1,23 @@
+name: Auto Deploy Vocab
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'  # 매주 월요일 자동 실행 (UTC 기준)
+  workflow_dispatch:      # 또는 수동으로 Actions 탭에서 실행 가능
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Check for vocab changes
+        run: |
+          git diff data/vocab.json | head -20 || true
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/vocab.json
+          git diff --cached --quiet || (git commit -m "data: weekly vocab sync ($(date -u +'%Y-%m-%d'))" && git push)
