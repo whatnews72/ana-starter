@@ -5,16 +5,18 @@
 <script>/* iframe(교차출처) 임베드 지원: ?t=토큰으로 로드되면 쿠키 없이도 API 인증 */
 (function(){var t=new URLSearchParams(location.search).get("t");if(!t)return;window.__ANA_T=t;
 var f=window.fetch;window.fetch=function(u,o){try{if(typeof u==="string"&&(u.charAt(0)==="/"||u.slice(0,5)==="data/")&&!/[?&]t=/.test(u)){u+=(u.indexOf("?")<0?"?":"&")+"t="+encodeURIComponent(t);}}catch(e){}return f.call(this,u,o);};})();</script>
+<script>/* GitHub Pages 정적 모드: 서버 없이 번들된 JSON 데이터 로드 */
+(function(){var STATIC_MODE=/\.github\.io$/.test(location.hostname);if(!STATIC_MODE)return;window.STATIC_MODE=true;document.body.classList.add("static-mode");var origFetch=window.fetch;window.fetch=function(url,opts){if(typeof url!=="string")return origFetch.call(this,url,opts);if(url==="/api/vocab"){return fetch("data/vocab.json").then(r=>r.json()).then(data=>new Response(JSON.stringify({words:data.words||[],due:data.words?.filter(w=>!w.nextReview||new Date(w.nextReview)<=new Date())||[]}),{status:200,headers:{"Content-Type":"application/json"}}));}if(url==="/api/state"||url==="/api/evolve"||url==="/api/feed"||url.includes("/api/feed?")){return Promise.resolve(new Response(JSON.stringify({}),{status:200,headers:{"Content-Type":"application/json"}}));}if(url.startsWith("/api/")&&opts&&(opts.method==="POST"||opts.method==="PUT")){return Promise.resolve(new Response(JSON.stringify({}),{status:200,headers:{"Content-Type":"application/json"}}));}return origFetch.call(this,url,opts);};})();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
 <title>비서 · 메모</title>
-<link rel="manifest" href="/manifest.json">
+<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#F2F4F6" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#17181C" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="비서">
-<link rel="icon" href="/logo.png?v=1">
-<link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png?v=1">
+<link rel="icon" href="logo.png?v=1">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png?v=1">
 <link rel="stylesheet" href="design-tokens.css">
 <style>
 /* 4개 분류 칩 색상 (alpha .chan-chip 스타일 미러) */
@@ -79,12 +81,28 @@ var f=window.fetch;window.fetch=function(u,o){try{if(typeof u==="string"&&(u.cha
 .vlist .vli .vm { font-size: 12px; color: var(--text-sub); flex: 1; }
 .vlist .vli .vbox { font-size: 10.5px; color: var(--text-weak); }
 .vlist .vli .vx { width: 26px; height: 26px; border-radius: 50%; color: var(--text-weak); font-size: 15px; }
+/* 정적 배포 모드: 비서/메모/진화 탭, 쓰기 기능 숨김 */
+body.static-mode button[data-top="secretary"],
+body.static-mode button[data-top="memo"],
+body.static-mode button[data-top="evolve"],
+body.static-mode #chatFab,
+body.static-mode #dtTalk,
+body.static-mode .evo-talk,
+body.static-mode #addBtn,
+body.static-mode #dtActs,
+body.static-mode #vocabPushBtn,
+body.static-mode .vaddwrap,
+body.static-mode .vli .vx,
+body.static-mode #evoAnalyze,
+body.static-mode .evo-card .dt-acts,
+body.static-mode #attachBtn,
+body.static-mode #micBtn { display:none !important; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <nav class="topnav" id="topnav">
-    <button class="topnav-brand" id="hambBtn"><img class="brand-img" src="/logo.png?v=1" alt="ANA"></button>
+    <button class="topnav-brand" id="hambBtn"><img class="brand-img" src="logo.png?v=1" alt="ANA"></button>
     <button data-top="secretary" class="tab on"><span class="trow"><span class="tnm">비서</span><span class="tbadge" id="badge-secretary"></span></span></button>
     <button data-top="memo" class="tab"><span class="trow"><span class="tnm">메모</span><span class="tbadge" id="badge-memo"></span></span></button>
     <button data-top="vocab" class="tab"><span class="trow"><span class="tnm">영단어</span><span class="tbadge" id="badge-vocab"></span></span></button>
@@ -429,7 +447,7 @@ function setTyping(st){
 }
 
 /* ---- PWA ---- */
-if("serviceWorker" in navigator) navigator.serviceWorker.register("/service-worker.js").catch(()=>{});
+if(!window.STATIC_MODE && "serviceWorker" in navigator) navigator.serviceWorker.register("service-worker.js").catch(()=>{});
 
 /* ---- 진화(자기개선) ---- */
 let EVOLVE_LIST=[], evoFeedN=0;

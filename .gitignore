@@ -3,4 +3,8 @@ data/auth.json
 data/uploads/
 data/vapid.json
 data/push_subs.json
+data/feed.json
+data/state.json
+logs/
+vocab_payload.json
 .DS_Store
