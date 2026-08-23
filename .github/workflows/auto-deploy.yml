@@ -2,7 +2,7 @@ name: Auto Deploy Vocab
 
 on:
   schedule:
-    - cron: '0 0 * * 1'  # 매주 월요일 자동 실행 (UTC 기준)
+    - cron: '0 0 * * *'  # 매일 자정 자동 실행 (UTC 기준)
   workflow_dispatch:      # 또는 수동으로 Actions 탭에서 실행 가능
 
 jobs:
