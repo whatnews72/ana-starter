@@ -1,5 +1,5 @@
 {
-  "version": 54,
+  "version": 55,
   "words": [
     {
       "id": "w1",
@@ -838,6 +838,116 @@
       "streak": 0,
       "nextReview": "2026-08-12",
       "addedAt": "2026-08-12"
+    },
+    {
+      "id": "wmt6a1pbz4ls",
+      "word": "programmable",
+      "meaning": "프로그래밍 가능한",
+      "example": "The new framework is programmable, allowing developers to customize the behavior.",
+      "exampleKo": "새로운 프레임워크는 프로그래밍 가능해서 개발자들이 동작을 커스터마이즈할 수 있다.",
+      "box": 1,
+      "streak": 0,
+      "nextReview": "2026-08-24",
+      "addedAt": "2026-08-24"
+    },
+    {
+      "id": "wmt6a1pbz6y1",
+      "word": "reshape",
+      "meaning": "재형성하다, 다시 형성하다",
+      "example": "The team decided to reshape their workflow based on user feedback.",
+      "exampleKo": "그 팀은 사용자 피드백을 바탕으로 워크플로우를 재형성하기로 결정했다.",
+      "box": 1,
+      "streak": 0,
+      "nextReview": "2026-08-24",
+      "addedAt": "2026-08-24"
+    },
+    {
+      "id": "wmt6a1pbz6t7",
+      "word": "optimization",
+      "meaning": "최적화",
+      "example": "The optimization of the algorithm reduced computation time by half.",
+      "exampleKo": "알고리즘의 최적화로 계산 시간이 절반으로 줄었다.",
+      "box": 1,
+      "streak": 0,
+      "nextReview": "2026-08-24",
+      "addedAt": "2026-08-24"
+    },
+    {
+      "id": "wmt6a1pbz36k",
+      "word": "reinforcement",
+      "meaning": "강화, 보강",
+      "example": "Reinforcement learning requires rewards that guide the agent's actions.",
+      "exampleKo": "강화 학습에서는 에이전트의 행동을 안내하는 보상이 필요하다.",
+      "box": 1,
+      "streak": 0,
+      "nextReview": "2026-08-24",
+      "addedAt": "2026-08-24"
+    },
+    {
+      "id": "wmt6a1pbz665",
+      "word": "scenario",
+      "meaning": "시나리오, 상황",
+      "example": "In this scenario, the robot must pick up objects from a table.",
+      "exampleKo": "이 시나리오에서 로봇은 테이블에서 물체를 집어야 한다.",
+      "box": 1,
+      "streak": 0,
+      "nextReview": "2026-08-24",
+      "addedAt": "2026-08-24"
+    },
+    {
+      "id": "wmt6a1pbz6eg",
+      "word": "validation",
+      "meaning": "검증",
+      "example": "The validation phase confirmed that the model works correctly on new data.",
+      "exampleKo": "검증 단계에서 모델이 새로운 데이터에 올바르게 작동함을 확인했다.",
+      "box": 1,
+      "streak": 0,
+      "nextReview": "2026-08-24",
+      "addedAt": "2026-08-24"
+    },
+    {
+      "id": "wmt6a1pbzjv",
+      "word": "benchmark",
+      "meaning": "벤치마크, 기준",
+      "example": "We used a standard benchmark to compare different approaches.",
+      "exampleKo": "우리는 표준 벤치마크를 사용해 다양한 접근법을 비교했다.",
+      "box": 1,
+      "streak": 0,
+      "nextReview": "2026-08-24",
+      "addedAt": "2026-08-24"
+    },
+    {
+      "id": "wmt6a1pbz5e2",
+      "word": "hierarchical",
+      "meaning": "계층적인",
+      "example": "The hierarchical structure allows managers to delegate tasks effectively.",
+      "exampleKo": "계층적 구조로 인해 관리자들은 작업을 효과적으로 위임할 수 있다.",
+      "box": 1,
+      "streak": 0,
+      "nextReview": "2026-08-24",
+      "addedAt": "2026-08-24"
+    },
+    {
+      "id": "wmt6a1pbz323",
+      "word": "inference",
+      "meaning": "추론",
+      "example": "The inference process takes milliseconds to generate predictions.",
+      "exampleKo": "추론 과정은 예측을 생성하는 데 밀리초 단위로 걸린다.",
+      "box": 1,
+      "streak": 0,
+      "nextReview": "2026-08-24",
+      "addedAt": "2026-08-24"
+    },
+    {
+      "id": "wmt6a1pbz2ab",
+      "word": "scalable",
+      "meaning": "확장 가능한",
+      "example": "The system is scalable, so it can handle more data as the company grows.",
+      "exampleKo": "그 시스템은 확장 가능해서 회사가 성장하면서 더 많은 데이터를 처리할 수 있다.",
+      "box": 1,
+      "streak": 0,
+      "nextReview": "2026-08-24",
+      "addedAt": "2026-08-24"
     }
   ]
 }
