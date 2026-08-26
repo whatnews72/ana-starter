@@ -136,6 +136,8 @@ function handleApi(req, res, url) {
       v.words.push({ id: "w" + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36),
         word: (w.word || "").toString().trim(), meaning: (w.meaning || "").toString().trim(),
         example: (w.example || "").toString().trim(), exampleKo: (w.exampleKo || "").toString().trim(),
+        paperTitle: (w.paperTitle || "").toString().trim(), paperUrl: (w.paperUrl || "").toString().trim(),
+        paperAbstract: (w.paperAbstract || "").toString().trim(),
         box: 1, streak: 0, nextReview: today, addedAt: today });
       added++;
     });
@@ -165,7 +167,7 @@ function handleApi(req, res, url) {
   if (p === "/api/vocab/update" && req.method === "POST") return readBody(req, b => {
     const v = loadVocab(); const w = (v.words || []).find(x => x.id === b.id);
     if (!w) return sendJson(res, 404, { error: "not found" });
-    ["meaning", "example", "exampleKo"].forEach(f => { if (b[f] !== undefined) w[f] = (b[f] || "").toString().trim(); });
+    ["meaning", "example", "exampleKo", "paperTitle", "paperUrl", "paperAbstract"].forEach(f => { if (b[f] !== undefined) w[f] = (b[f] || "").toString().trim(); });
     v.version = (v.version || 1) + 1; saveVocab(v);
     return sendJson(res, 200, { ok: true, word: w, version: v.version });
   });

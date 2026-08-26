@@ -37,6 +37,7 @@ curl -s -X POST http://127.0.0.1:8777/api/agent \
 - 조회: `GET /api/vocab` → `{version, words, due}` (`due` = 오늘 복습 대상, `nextReview <= 오늘`).
 - 사용자가 "영단어 ~개 추가해줘" 처럼 요청하면 **승인 없이 바로** 추가한다(단어 추가는 위험도가 낮아 diff 제안 대상이 아님). **`example`은 자연스러운 새 예문 한 문장, `exampleKo`는 그 예문의 한국어 번역을 반드시 함께 채운다** (원문 논문 문장을 그대로 넣지 말고, 학습하기 쉬운 짧고 자연스러운 문장으로 만들 것):
   `POST /api/vocab/add` body `{"words":[{"word":"diligent","meaning":"부지런한","example":"She is diligent about her studies.","exampleKo":"그녀는 공부에 부지런하다."}]}` (파일 기반 curl 규칙 동일 적용 — 한글은 명령줄에 직접 넣지 말 것).
-- 기존 단어의 뜻/예문/예문 해석을 고칠 땐 `POST /api/vocab/update` body `{"id":"...", "example":"...", "exampleKo":"..."}` (복습 상태 box/streak/nextReview는 건드리지 않음).
+- 논문에서 가져온 단어라면 `paperTitle`(논문 제목), `paperUrl`(논문을 찾을 수 있는 링크, 가능하면 arXiv abstract 링크), `paperAbstract`(초록 2~4문장 발췌, 500자 이내)를 함께 채운다 — 선택 필드이며, 사용자가 직접 추가하는 단어에는 채우지 않아도 된다.
+- 기존 단어의 뜻/예문/예문 해석을 고칠 땐 `POST /api/vocab/update` body `{"id":"...", "example":"...", "exampleKo":"..."}` (복습 상태 box/streak/nextReview는 건드리지 않음); 논문 정보를 고칠 때도 동일하게 `"paperTitle"`, `"paperUrl"`, `"paperAbstract"` 필드를 포함해서 전송 가능.
 - 복습 정답/오답 반영, 단어 삭제는 **대시보드 UI(플래시카드/×버튼)에서 사용자가 직접** 한다 — 세션이 대신 호출하지 않는다.
 - 이 아이템들은 `data/state.json`의 `items`와 별개(`data/vocab.json`)이므로 `/api/agent`의 `diff`(add/update/remove)로 다루지 않는다.

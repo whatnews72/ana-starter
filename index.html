@@ -62,6 +62,10 @@ var f=window.fetch;window.fetch=function(u,o){try{if(typeof u==="string"&&(u.cha
 .vexample-row { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 0 6px; }
 .vspeak-sm { width: 24px; height: 24px; font-size: 12px; }
 .vexample-ko { font-size: 12px; color: var(--text-weak); line-height: 1.5; padding: 0 6px; }
+.vpaper { margin-top: 6px; padding: 8px 10px; border-radius: 12px; background: var(--surface-2); text-align: left; font-size: 12px; }
+.vpaper a { color: var(--blue); font-weight: 700; text-decoration: none; }
+.vpaper summary { cursor: pointer; color: var(--text-weak); font-size: 11.5px; margin-top: 4px; }
+.vpaper .vpaper-abs { color: var(--text-sub); line-height: 1.5; margin-top: 4px; }
 .vcard .vflip { height: 40px; padding: 0 18px; border-radius: 999px; background: var(--surface-2); color: var(--text-sub); font-size: 13px; font-weight: 700; }
 .vcard .vrow { display: flex; gap: 10px; width: 100%; margin-top: 4px; }
 .vcard .vbtn { flex: 1; height: 46px; border-radius: 14px; font-size: 14px; font-weight: 800; }
@@ -607,6 +611,7 @@ function renderVocab(){
     html+='<div class="vmeaning">'+esc(w.meaning||"(뜻 미등록)")+'</div>';
     if(w.example) html+='<div class="vexample-row"><div class="vexample">'+esc(w.example)+'</div><button class="vspeak vspeak-sm" data-speak="'+esc(w.example)+'" aria-label="예문 발음 듣기">🔊</button></div>';
     if(w.exampleKo) html+='<div class="vexample-ko">'+esc(w.exampleKo)+'</div>';
+    if(w.paperTitle) html+='<div class="vpaper">📄 관련 논문: <a href="'+esc(w.paperUrl||"#")+'" target="_blank" rel="noopener">'+esc(w.paperTitle)+'</a>'+(w.paperAbstract?'<details><summary>초록 보기</summary><div class="vpaper-abs">'+esc(w.paperAbstract)+'</div></details>':'')+'</div>';
     html+='<div class="vrow"><button class="vbtn vno" id="vNo">다시</button><button class="vbtn vyes" id="vYes">기억남</button></div>';
   } else { html+='<button class="vflip" id="vFlip">뜻 보기</button>'; }
   html+='</div>'+vocabAddHtml()+vocabListHtml();
