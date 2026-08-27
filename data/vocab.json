@@ -1,5 +1,5 @@
 {
-  "version": 68,
+  "version": 69,
   "words": [
     {
       "id": "w1",
@@ -1093,6 +1093,116 @@
       "meaning": "배포하다, 전개하다",
       "example": "The team will deploy the new version to production tomorrow.",
       "exampleKo": "팀은 내일 새 버전을 프로덕션에 배포할 것이다.",
+      "box": 1,
+      "streak": 0,
+      "nextReview": "2026-08-28",
+      "addedAt": "2026-08-27"
+    },
+    {
+      "id": "wmt10w001",
+      "word": "meticulous",
+      "meaning": "정밀한, 세심한",
+      "example": "The craftsman paid meticulous attention to every detail of his work.",
+      "exampleKo": "그 장인은 자신의 작업의 모든 세부사항에 세심한 주의를 기울였다.",
+      "box": 1,
+      "streak": 0,
+      "nextReview": "2026-08-28",
+      "addedAt": "2026-08-27"
+    },
+    {
+      "id": "wmt10w002",
+      "word": "eloquent",
+      "meaning": "웅변적인, 표현력 있는",
+      "example": "His eloquent speech about social justice inspired many people.",
+      "exampleKo": "사회 정의에 관한 그의 웅변적인 연설은 많은 사람들을 영감주었다.",
+      "box": 1,
+      "streak": 0,
+      "nextReview": "2026-08-28",
+      "addedAt": "2026-08-27"
+    },
+    {
+      "id": "wmt10w003",
+      "word": "diligent",
+      "meaning": "부지런한, 열심인",
+      "example": "She is a diligent student who completes all her assignments on time.",
+      "exampleKo": "그녀는 모든 과제를 제때 완료하는 부지런한 학생이다.",
+      "box": 1,
+      "streak": 0,
+      "nextReview": "2026-08-28",
+      "addedAt": "2026-08-27"
+    },
+    {
+      "id": "wmt10w004",
+      "word": "pragmatic",
+      "meaning": "실용적인, 현실적인",
+      "example": "We need a pragmatic solution that works within our budget constraints.",
+      "exampleKo": "우리는 예산 제약 범위 내에서 작동하는 실용적인 해결책이 필요하다.",
+      "box": 1,
+      "streak": 0,
+      "nextReview": "2026-08-28",
+      "addedAt": "2026-08-27"
+    },
+    {
+      "id": "wmt10w005",
+      "word": "ambiguous",
+      "meaning": "모호한, 애매한",
+      "example": "The contract had ambiguous language that led to misunderstandings.",
+      "exampleKo": "그 계약서에는 오해를 야기한 모호한 표현이 있었다.",
+      "box": 1,
+      "streak": 0,
+      "nextReview": "2026-08-28",
+      "addedAt": "2026-08-27"
+    },
+    {
+      "id": "wmt10w006",
+      "word": "tenacious",
+      "meaning": "끈질긴, 집요한",
+      "example": "His tenacious efforts to improve his skills eventually led to success.",
+      "exampleKo": "자신의 기술을 향상시키기 위한 그의 끈질긴 노력은 결국 성공으로 이어졌다.",
+      "box": 1,
+      "streak": 0,
+      "nextReview": "2026-08-28",
+      "addedAt": "2026-08-27"
+    },
+    {
+      "id": "wmt10w007",
+      "word": "ephemeral",
+      "meaning": "일시적인, 순간의",
+      "example": "Social media trends are often ephemeral, disappearing as quickly as they appear.",
+      "exampleKo": "소셜 미디어 트렌드는 종종 일시적이며, 나타나는 것만큼 빠르게 사라진다.",
+      "box": 1,
+      "streak": 0,
+      "nextReview": "2026-08-28",
+      "addedAt": "2026-08-27"
+    },
+    {
+      "id": "wmt10w008",
+      "word": "altruistic",
+      "meaning": "이타적인, 남을 위하는",
+      "example": "Her altruistic decision to donate her savings to charity showed her compassion.",
+      "exampleKo": "자신의 저축을 자선에 기부하겠다는 그녀의 이타적인 결정은 그녀의 연민을 보여주었다.",
+      "box": 1,
+      "streak": 0,
+      "nextReview": "2026-08-28",
+      "addedAt": "2026-08-27"
+    },
+    {
+      "id": "wmt10w009",
+      "word": "verbose",
+      "meaning": "장황한, 말이 많은",
+      "example": "The author's verbose writing style made the novel difficult to follow.",
+      "exampleKo": "그 작가의 장황한 문체는 소설을 따라가기 어렵게 만들었다.",
+      "box": 1,
+      "streak": 0,
+      "nextReview": "2026-08-28",
+      "addedAt": "2026-08-27"
+    },
+    {
+      "id": "wmt10w010",
+      "word": "serene",
+      "meaning": "고요한, 차분한",
+      "example": "The serene garden provided a peaceful retreat from the bustling city.",
+      "exampleKo": "그 고요한 정원은 분주한 도시에서 평화로운 휴식처를 제공했다.",
       "box": 1,
       "streak": 0,
       "nextReview": "2026-08-28",
