@@ -1,5 +1,5 @@
 {
-  "version": 79,
+  "version": 92,
   "words": [
     {
       "id": "w1",
@@ -7,23 +7,11 @@
       "meaning": "어디에나 있는, 흔한",
       "example": "Smartphones are ubiquitous these days.",
       "exampleKo": "요즘 스마트폰은 어디에나 있다.",
-      "box": 4,
-      "streak": 3,
-      "nextReview": "2026-08-16",
-      "addedAt": "2026-08-07",
-      "lastReview": "2026-08-12"
-    },
-    {
-      "id": "w2",
-      "word": "meticulous",
-      "meaning": "꼼꼼한, 세심한",
-      "example": "She is meticulous about her work.",
-      "exampleKo": "그녀는 자기 일에 대해 꼼꼼하다.",
       "box": 1,
       "streak": 0,
-      "nextReview": "2026-08-13",
+      "nextReview": "2026-08-28",
       "addedAt": "2026-08-07",
-      "lastReview": "2026-08-12"
+      "lastReview": "2026-08-27"
     },
     {
       "id": "w3",
@@ -31,11 +19,11 @@
       "meaning": "회복력 있는, 탄력적인",
       "example": "Children are often remarkably resilient.",
       "exampleKo": "아이들은 종종 놀라울 정도로 회복력이 강하다.",
-      "box": 4,
-      "streak": 3,
-      "nextReview": "2026-08-13",
+      "box": 1,
+      "streak": 0,
+      "nextReview": "2026-08-28",
       "addedAt": "2026-08-07",
-      "lastReview": "2026-08-09"
+      "lastReview": "2026-08-27"
     },
     {
       "id": "wmsji6y1xew",
@@ -45,9 +33,9 @@
       "exampleKo": "그 반은 다양한 배경의 학생들로 이질적이었다.",
       "box": 1,
       "streak": 0,
-      "nextReview": "2026-08-10",
+      "nextReview": "2026-08-28",
       "addedAt": "2026-08-07",
-      "lastReview": "2026-08-09"
+      "lastReview": "2026-08-27"
     },
     {
       "id": "wmsji6y1x4w2",
@@ -55,11 +43,11 @@
       "meaning": "(로봇 등의) 구현체, 신체적 형태",
       "example": "This new robot is the embodiment of years of research.",
       "exampleKo": "이 새 로봇은 수년간의 연구가 구현된 것이다.",
-      "box": 2,
-      "streak": 1,
-      "nextReview": "2026-08-10",
+      "box": 1,
+      "streak": 0,
+      "nextReview": "2026-08-28",
       "addedAt": "2026-08-07",
-      "lastReview": "2026-08-09"
+      "lastReview": "2026-08-27"
     },
     {
       "id": "wmsji6y1x1i6",
@@ -950,99 +938,11 @@
       "addedAt": "2026-08-24"
     },
     {
-      "id": "wauto001",
-      "word": "eloquent",
-      "meaning": "웅변적인, 말을 잘하는",
-      "example": "Her eloquent speech moved the entire audience to tears.",
-      "exampleKo": "그녀의 웅변적인 연설은 청중 전체를 눈물짓게 했다.",
-      "box": 1,
-      "streak": 0,
-      "nextReview": "2026-08-25",
-      "addedAt": "2026-08-24"
-    },
-    {
       "id": "wauto002",
       "word": "meager",
       "meaning": "부족한, 적은",
       "example": "Despite his meager salary, he managed to save money every month.",
       "exampleKo": "형편없는 급여에도 불구하고 그는 매달 돈을 모을 수 있었다.",
-      "box": 1,
-      "streak": 0,
-      "nextReview": "2026-08-25",
-      "addedAt": "2026-08-24"
-    },
-    {
-      "id": "wauto003",
-      "word": "pragmatic",
-      "meaning": "실용적인, 현실주의적인",
-      "example": "We need to take a pragmatic approach to solve this problem.",
-      "exampleKo": "우리는 이 문제를 해결하기 위해 실용적인 접근을 해야 한다.",
-      "box": 1,
-      "streak": 0,
-      "nextReview": "2026-08-25",
-      "addedAt": "2026-08-24"
-    },
-    {
-      "id": "wauto004",
-      "word": "ambiguous",
-      "meaning": "모호한, 이중적인",
-      "example": "The instructions were ambiguous, so everyone interpreted them differently.",
-      "exampleKo": "그 지시사항은 모호해서 모든 사람이 다르게 해석했다.",
-      "box": 1,
-      "streak": 0,
-      "nextReview": "2026-08-25",
-      "addedAt": "2026-08-24"
-    },
-    {
-      "id": "wauto005",
-      "word": "tenacious",
-      "meaning": "끈질긴, 집요한",
-      "example": "Her tenacious determination helped her achieve her goals.",
-      "exampleKo": "그녀의 끈질긴 결의력이 목표를 달성하는 데 도움이 되었다.",
-      "box": 1,
-      "streak": 0,
-      "nextReview": "2026-08-25",
-      "addedAt": "2026-08-24"
-    },
-    {
-      "id": "wauto006",
-      "word": "ephemeral",
-      "meaning": "일시적인, 순간의",
-      "example": "The beauty of cherry blossoms is ephemeral, lasting only a few weeks.",
-      "exampleKo": "벚꽃의 아름다움은 일시적이며 단 몇 주만 지속된다.",
-      "box": 1,
-      "streak": 0,
-      "nextReview": "2026-08-25",
-      "addedAt": "2026-08-24"
-    },
-    {
-      "id": "wauto007",
-      "word": "altruistic",
-      "meaning": "이타적인, 남을 위하는",
-      "example": "His altruistic nature motivated him to volunteer for charitable organizations.",
-      "exampleKo": "그의 이타적인 성품이 자선 단체의 자원봉사를 하도록 동기를 부여했다.",
-      "box": 1,
-      "streak": 0,
-      "nextReview": "2026-08-25",
-      "addedAt": "2026-08-24"
-    },
-    {
-      "id": "wauto008",
-      "word": "verbose",
-      "meaning": "장황한, 말이 많은",
-      "example": "The report was too verbose and could have been summarized in fewer words.",
-      "exampleKo": "그 보고서는 너무 장황해서 더 적은 단어로 요약할 수 있었다.",
-      "box": 1,
-      "streak": 0,
-      "nextReview": "2026-08-25",
-      "addedAt": "2026-08-24"
-    },
-    {
-      "id": "wauto009",
-      "word": "serene",
-      "meaning": "고요한, 차분한",
-      "example": "The serene landscape of the mountains provided a perfect escape from city life.",
-      "exampleKo": "산의 고요한 풍경은 도시 생활에서 완벽한 탈출을 제공했다.",
       "box": 1,
       "streak": 0,
       "nextReview": "2026-08-25",
