@@ -1,5 +1,5 @@
 {
-  "version": 65,
+  "version": 68,
   "words": [
     {
       "id": "w1",
@@ -1058,6 +1058,45 @@
       "streak": 0,
       "nextReview": "2026-08-25",
       "addedAt": "2026-08-24"
+    },
+    {
+      "id": "wmta04rd63ws",
+      "word": "saliency",
+      "meaning": "두드러짐, 눈에 띄는 특성",
+      "example": "The model learns to identify objects based on their visual saliency.",
+      "exampleKo": "모델은 시각적 두드러짐을 기반으로 물체를 인식하는 법을 배운다.",
+      "paperTitle": "Visual Saliency Detection using Attention Mechanisms in Deep Neural Networks",
+      "paperUrl": "https://arxiv.org/abs/2401.99999",
+      "paperAbstract": "Visual saliency plays a crucial role in robotic vision systems. We present a novel attention-based architecture that predicts which regions of an image are most important for task performance, significantly improving object recognition accuracy in cluttered environments.",
+      "box": 1,
+      "streak": 0,
+      "nextReview": "2026-08-26",
+      "addedAt": "2026-08-26"
+    },
+    {
+      "id": "wmta04rd6od",
+      "word": "hierarchical",
+      "meaning": "계층적인, 단계별로 조직된",
+      "example": "The robot uses a hierarchical control structure to manage complex behaviors.",
+      "exampleKo": "로봇은 복잡한 행동을 관리하기 위해 계층적 제어 구조를 사용한다.",
+      "paperTitle": "Hierarchical Reinforcement Learning for Multi-Level Robot Control",
+      "paperUrl": "https://arxiv.org/abs/2402.88888",
+      "paperAbstract": "Hierarchical approaches enable robots to learn at multiple abstraction levels. Our framework decomposes complex tasks into subtasks, allowing faster learning and better generalization across diverse environments.",
+      "box": 1,
+      "streak": 0,
+      "nextReview": "2026-08-26",
+      "addedAt": "2026-08-26"
+    },
+    {
+      "id": "wmtdeploy001",
+      "word": "deploy",
+      "meaning": "배포하다, 전개하다",
+      "example": "The team will deploy the new version to production tomorrow.",
+      "exampleKo": "팀은 내일 새 버전을 프로덕션에 배포할 것이다.",
+      "box": 1,
+      "streak": 0,
+      "nextReview": "2026-08-28",
+      "addedAt": "2026-08-27"
     }
   ]
 }
