@@ -1,4 +1,4 @@
-# GitHub Pages 배포 동기화 스크립트 (일일 실행)
+﻿# GitHub Pages 배포 동기화 스크립트 (일일 실행)
 # 사용법:
 #   - 수동: .\sync-deploy.ps1
 #   - 스케줄: Windows Task Scheduler "ANA Vocab Git Sync" (매일 05:50, 로컬 시간)

@@ -1,4 +1,4 @@
-# Create the "ANA Server Autostart" scheduled task
+﻿# Create the "ANA Server Autostart" scheduled task
 # Usage: powershell -File "create-server-autostart-task.ps1"
 # This task starts the dashboard server at system startup.
 

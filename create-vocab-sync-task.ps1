@@ -1,4 +1,4 @@
-# Create the "ANA Vocab Git Sync" scheduled task
+﻿# Create the "ANA Vocab Git Sync" scheduled task
 # Usage: powershell -File "create-vocab-sync-task.ps1"
 # This task runs daily at 05:50 to commit and push new vocab words to GitHub.
 
