@@ -129,10 +129,15 @@ function handleApi(req, res, url) {
   if (p === "/api/vocab/add" && req.method === "POST") return readBody(req, b => {
     const v = loadVocab(); const today = todayStr();
     const list = Array.isArray(b.words) ? b.words : (b.word ? [b] : []);
-    let added = 0;
+    let added = 0, skipped = 0;
+    v.words = v.words || [];
+    // 대소문자 무시 중복 검사 (같은 요청 안의 중복 포함)
+    const seen = new Set(v.words.map(x => (x.word || "").toString().trim().toLowerCase()));
     list.forEach(w => {
       if (!w || !(w.word || "").toString().trim()) return;
-      v.words = v.words || [];
+      const key = w.word.toString().trim().toLowerCase();
+      if (seen.has(key)) { skipped++; return; }
+      seen.add(key);
       v.words.push({ id: "w" + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36),
         word: (w.word || "").toString().trim(), meaning: (w.meaning || "").toString().trim(),
         example: (w.example || "").toString().trim(), exampleKo: (w.exampleKo || "").toString().trim(),
@@ -141,8 +146,8 @@ function handleApi(req, res, url) {
         box: 1, streak: 0, nextReview: today, addedAt: today });
       added++;
     });
-    v.version = (v.version || 1) + 1; saveVocab(v);
-    return sendJson(res, 200, { ok: true, added, version: v.version });
+    if (added) { v.version = (v.version || 1) + 1; saveVocab(v); }
+    return sendJson(res, 200, { ok: true, added, skipped, version: v.version });
   });
   // 영단어 복습 결과 반영(라이트너 박스 1~6단계, 정답이면 간격 늘리고 오답이면 1단계로 리셋)
   if (p === "/api/vocab/review" && req.method === "POST") return readBody(req, b => {
