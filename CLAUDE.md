@@ -1,13 +1,294 @@
-# ANA Starter — 이 세션의 역할 (두뇌)
+# CLAUDE.md
+
+이 파일은 Claude Code가 이 저장소에서 작업할 때 참고하는 안내서입니다. (문서는 한국어로 작성)
+
+
+### 빠른 시작 — 로컬에서 실행하기
+
+```bash
+node server.js        # 대시보드 실행 http://localhost:8777
+npm start             # (위와 동일)
+npm run dev           # (위와 동일)
+PORT=9000 node server.js  # 포트 변경
+```
+
+**`npm install` 불필요** — 서버는 Node.js 내장 모듈만 사용(`http`, `fs`, `path`, `crypto`). `data/vapid.json`이 없으면 선택적 의존성 `web-push`는 로드되지 않습니다.
+
+**GitHub Codespaces:** `node server.js` 실행 후 자동 포워딩된 포트 8777 열기(Ports 탭 → 🌐 URL). 로컬에서는 로그인 필요 없음; 대시보드 직접 오픈.
+
+**Windows (권장):** `start-ana.bat` 실행. 전체 스택 처리:
+- `server.js` 시작 (포트 8777 대시보드)
+- `fakechat-bridge.js` 시작 (포트 8798 릴레이)
+- Claude Code 백그라운드 세션 시작 + fakechat 채널 연결
+- Cloudflare 빠른 터널 시작
+- 팝업에 외부 URL + 접근 키 표시
+
+### 고급 아키텍처
+
+**Agent-Native App (ANA)** — Claude Code 세션이 대시보드의 "두뇌" 역할. 5단계 루프:
+
+```
+① 대시보드 (index.html)  →  ② 서버 (server.js:8777)  →  ③ 릴레이 (fakechat-bridge.js)
+                                                      ↓
+                          ⑤ Claude Code 세션  ←  ④ fakechat 채널
+```
+
+**①②③은 이 저장소** — 로컬에서 실행. **④⑤는 런타임 환경** — Claude Code 플러그인 시스템 + 활성 세션.
+
+**작동 방식:**
+1. 대시보드 채팅창에 메시지 입력 (① → ②)
+2. 릴레이가 fakechat 채널로 전달 (③ → ④)
+3. Claude 세션이 메시지 읽고 행동 (⑤)
+4. Claude가 `POST /api/agent`로 서버에 직접 답변 (⑤ → ②)
+5. 대시보드 실시간 업데이트; 승인/거절
+6. 데이터 버전 증가 + 모든 기기 동기화
+
+**전통적 백엔드 로직 없음** — 코딩 에이전트 *자체가* 백엔드. "상단에 배지 추가"는 `index.html` 또는 `server.js` 직접 편집 후 대시보드에 승인 메시지로 응답.
+
+### 프로젝트 구조
+
+```
+ana-starter/
+├── index.html                # 전체 프론트엔드 SPA (677줄, 바닐라JS, PWA)
+│                             # 탭: 비서, 메모, 영단어, 진화
+├── server.js                 # 백엔드 (426줄, Node http, 의존성 0, JSON 데이터베이스)
+├── fakechat-bridge.js        # 릴레이: 대시보드 채팅 → fakechat 채널 (수신만)
+├── design-tokens.css         # 디자인 시스템 (41KB CSS 커스텀 프로퍼티 & 컴포넌트)
+├── DESIGN_SYSTEM.md          # 디자인 토큰 문서
+├── service-worker.js         # PWA 서비스 워커
+├── manifest.json             # PWA 매니페스트
+├── icon-*.png                # PWA 아이콘 (180, 192, 512)
+├── logo.png                  # ANA 로고
+│
+├── data/                     # 런타임 "데이터베이스" (JSON 파일)
+│   ├── state.json            # 보드 아이템 (gitignored; 사용자 개인 데이터)
+│   ├── feed.json             # 채팅 받은편지함/메시지 (gitignored)
+│   ├── vocab.json            # 라이트너 박스 단어 (gitignored 아님; CI가 자동 커밋)
+│   ├── evolve.json           # 자기개선 제안
+│   ├── auth.json             # 로그인 게이트 비밀: {password, token} (자동생성, gitignored)
+│   ├── vapid.json            # 웹푸시 VAPID 키쌍 (활성화시, gitignored)
+│   └── push_subs.json        # 푸시 구독 (gitignored)
+│
+├── logs/                     # 런타임 로그 (gitignored)
+│   ├── server.log
+│   ├── bridge.log
+│   ├── tunnel.log
+│   └── ...
+│
+├── .github/workflows/
+│   └── auto-deploy.yml       # 매일 자정 크론: data/vocab.json 변경사항 커밋/푸시
+├── .devcontainer/
+│   └── devcontainer.json     # GitHub Codespaces 설정 (Node 20, 포트 8777 포워딩)
+│
+├── Windows 자동화 스크립트:
+│   ├── start-ana.bat         # 전체 스택 실행 (메인 진입점)
+│   ├── ensure-channel.ps1    # Claude 백그라운드 세션 시작 + fakechat 채널
+│   ├── start-tunnel.ps1      # Cloudflare 빠른 터널 시작
+│   ├── daily-paper-vocab.bat # 예약 작업: HF 논문 가져오기, 단어 10개 추가
+│   ├── daily-vocab-push.bat  # 예약 작업: POST /api/vocab/push-today
+│   ├── sync-deploy.ps1       # 수동: data/vocab.json을 git 추가/커밋/푸시 (GitHub Pages 재배포)
+│   └── show-tunnel-popup.ps1 # 외부 URL + 접근 키 팝업 표시
+│
+├── run-all.sh                # Bash: server.js + fakechat-bridge.js 함께 실행
+├── start.js                  # Node 편의 래퍼 (server.js용)
+├── package.json              # NPM 메타데이터 (스크립트, 선택적 web-push)
+├── LICENSE                   # AGPL-3.0
+├── COMMERCIAL.md             # 상업 라이선스 조건
+├── README.md / README.ko.md   # 메인 프로젝트 문서
+└── .claude/settings.json     # Claude Code 프로젝트 설정
+```
+
+### 데이터 모델
+
+**보드 아이템** (`data/state.json`):
+```json
+{
+  "version": 5,
+  "items": [
+    {
+      "id": "sec-1",
+      "board": "secretary",      // "secretary" 또는 "memo"
+      "channel": "schedule",     // 소채널: "todo", "schedule", "work", "study"
+      "title": "제안서 제출",
+      "sender": "you",
+      "priority": "high",        // "low", "normal", "high"
+      "due": "2026-08-30",       // YYYY-MM-DD
+      "done": false,
+      "summary": "월말까지 Q3 제안서 완료"
+    }
+  ]
+}
+```
+
+**채팅 피드** (`data/feed.json`):
+```json
+{
+  "messages": [
+    {"id": 1, "sender": "you", "text": "할일 추가해줘", "ts": 1693478400},
+    {"id": 2, "sender": "agent", "text": "완료!", "ts": 1693478410}
+  ],
+  "requests": [
+    {"id": "dash-1", "text": "할일에 제안서 마감 추가해줘", "status": "new", "ts": 1693478400}
+  ],
+  "nextMsg": 3,
+  "nextReq": 2
+}
+```
+
+**영단어** (`data/vocab.json`, 라이트너 박스 간격 반복):
+```json
+{
+  "version": 12,
+  "words": [
+    {
+      "id": "vocab-1",
+      "word": "diligent",
+      "meaning": "부지런한",
+      "example": "She is diligent about her studies.",
+      "exampleKo": "그녀는 공부에 부지런하다.",
+      "box": 2,          // 라이트너 박스 단계 (1-6)
+      "streak": 3,       // 연속 정답 횟수
+      "nextReview": "2026-08-30",
+      "paperTitle": "대규모 학습",
+      "paperUrl": "https://arxiv.org/abs/2026.12345",
+      "paperAbstract": "이 논문은..."
+    }
+  ]
+}
+```
+
+**서버 API** (부분; 전체는 `server.js` 참조):
+
+| 엔드포인트 | 메서드 | 목적 |
+|-----------|--------|------|
+| `/` | GET | 정적 `index.html` 서빙 |
+| `/api/state` | GET | 보드 상태 (아이템, 버전) |
+| `/api/feed` | GET | 채팅 피드 (메시지, 요청) |
+| `/api/vocab` | GET | 단어 목록 (오늘 복습 대상) |
+| `/api/agent` | POST | **에이전트 답변** `{reqId, text, diff?}` |
+| `/api/apply` | POST | 승인된 변경사항 적용 |
+| `/api/evolve` | POST | 자기개선 제안 등록 |
+| `/api/vocab/add` | POST | 영단어 추가 (승인 불필요) |
+| `/api/vocab/update` | POST | 기존 단어 뜻/예문 수정 |
+| `/api/vocab/push-today` | POST | 오늘 복습 단어를 외부 서비스로 푸시 |
+| `/api/inbox-wait` | GET | 새 메시지 대기 (릴레이용 롱폴) |
+| `/api/stream` | GET | Server-Sent Events (SSE) 실시간 동기화 |
+| `/api/login` | POST | 인증 게이트 (`ANA_REQUIRE_AUTH=1`시) |
+
+### 개발 & 테스팅
+
+**테스트 프레임워크 없음, 린터 없음, 빌드 단계 없음.**
+
+- **프론트엔드**: `index.html` 편집, 브라우저 새로고침. 클라이언트 바닐라JS가 `/api/*` 엔드포인트 상태 모두 렌더링.
+- **백엔드**: `server.js` 편집, 서버 재시작 (`npm start` 또는 `node server.js`).
+- **통합 테스트**:
+  1. `npm start` 실행 (또는 `npm run all` 전체 스택)
+  2. 브라우저에서 `http://localhost:8777` 열기
+  3. 대시보드 채팅창에 메시지 입력
+  4. Claude Code의 fakechat 채널에서 도착한 메시지 확인
+  5. 대시보드에서 결과 제안 승인/거절
+
+**디자인 시스템**: `design-tokens.css` (CSS 커스텀 프로퍼티) 또는 `DESIGN_SYSTEM.md` 편집. 모든 UI는 토큰 참조 (`--bg`, `--surface`, `--blue-500` 등), 절대 하드코드 색상 금지.
+
+### 배포 & CI/CD
+
+**로컬 (주요 사용):**
+- `start-ana.bat` (Windows) 또는 `npm run all` (모든 OS) 실행해 ②③ 시작
+- Claude Code를 fakechat 채널 연결 후 실행해 ④⑤ 완료
+- `http://localhost:8777` 또는 Cloudflare 빠른 터널 (run `start-tunnel.ps1` 외부 URL + 접근 키)
+
+**GitHub 자동화:**
+- `.github/workflows/auto-deploy.yml` — 매일 자정 크론 (UTC) `data/vocab.json` 변경사항 커밋/푸시. 작성자: `github-actions[bot]`.
+- `sync-deploy.ps1` — 수동 스크립트: `git add/commit/push data/vocab.json` → GitHub Pages 재배포 트리거.
+- GitHub Pages `https://whatnews72.github.io/ana-starter/` 서빙 (저장소 Settings 설정, `main` 루트에서 서빙).
+
+**GitHub Codespaces:**
+- `.devcontainer/devcontainer.json` Node 20 이미지, 포트 8777 포워딩 제공
+- `node server.js` 실행 후 포워딩된 포트 URL 열기
+- 전체 루프는 Codespace 외부의 Claude 세션 + fakechat 채널 필요 (로컬 Claude Code에 위치)
+
+**공개 접근 (선택사항):**
+- `ANA_REQUIRE_AUTH=1 node server.js` — `data/auth.json`의 비밀번호 로그인 게이트 필요 (자동생성)
+- 외부 포워딩 트래픽만 적용 (`cf-connecting-ip` 또는 `x-forwarded-for` 헤더 감지); 로컬/LAN은 열린 상태
+
+### 흔한 작업
+
+**영단어 추가** (승인 불필요, 직접 적용):
+```bash
+# 먼저 JSON을 파일에 쓰기 (Windows 한글 인코딩 문제 방지)
+# 그 후 POST
+curl -s -X POST http://localhost:8777/api/vocab/add \
+  -H 'Content-Type: application/json' \
+  --data-binary @payload.json
+
+# payload.json:
+# {"words":[
+#   {"word":"diligent","meaning":"부지런한",
+#    "example":"She is diligent about her studies.",
+#    "exampleKo":"그녀는 공부에 부지런하다.",
+#    "paperTitle":"대규모 학습","paperUrl":"https://arxiv.org/abs/...",
+#    "paperAbstract":"..."}
+# ]}
+```
+
+**앱 UI/동작 수정** (예: "상단에 배지 추가"):
+1. `index.html` (프론트엔드) 또는 `server.js` (백엔드) 편집
+2. 로컬 테스트
+3. `/api/agent`로 텍스트 확인 전송: `{"reqId": N, "text": "적용했습니다"}`
+
+**보드 아이템 추가** (대시보드 승인 필요):
+- `/api/agent`에 `diff` → `add` 배열로 전송:
+  ```
+  {"reqId": N, "text": "할일 추가할까요?", 
+   "diff": {"add": [{"id":"sec-2","board":"secretary","channel":"todo","title":"새 할일",...}]}}
+  ```
+- 사용자가 대시보드에서 승인 → 서버 적용 + 버전 증가
+
+**보드 아이템 변경** (승인 필요):
+- `/api/agent`에 `diff` → `update`로 전송:
+  ```
+  {"reqId": N, "text": "완료할까요?",
+   "diff": {"update": [{"id":"sec-1","done":true}]}}
+  ```
+
+**공개 터널에서 로그인 게이트 활성화:**
+```bash
+ANA_REQUIRE_AUTH=1 node server.js
+# data/auth.json의 접근 키 → { password: "...", token: "..." }
+```
+
+### 알려진 문제 / 정리 필요한 것
+
+**저장소 루트의 디버그 파일** (삭제 또는 무시 안전):
+- `vocab_payload.json` — 테스팅의 잔여 페이로드 파일
+- `server.log` — `logs/server.log`의 중복
+- `D:AI_Agent만들기ANA Agentana-startervocab_payload.json` — 잘못된 파일명 (Windows 도구가 절대 경로를 리터럴 파일명으로 작성)
+
+개발 잔여물이며 프로젝트의 일부가 아님. `.gitignore`는 `logs/` 및 단일 `vocab_payload.json` 제외; 잘못된 파일명은 gitignored 아니지만 커밋하지 않아야 함.
+
+### 관련 저장소
+
+- **업스트림 ANA 프레임워크**: [tykimos/agent-native-agent](https://github.com/tykimos/agent-native-agent) — Claude Code 스킬, 디자인 시스템, 아키텍처 원칙
+- **ANA 라이프스타일 사례**: [tykimos/agent-native-lifestyle](https://github.com/tykimos/agent-native-lifestyle) — 사용 예시 및 패턴
+
+---
+
+## 런타임 지시사항 (Runtime Instructions for Brain Sessions)
+
+다음 섹션은 기존 CLAUDE.md 콘텐츠입니다. fakechat 채널로 대시보드와 연결된 Claude 세션이 메시지를 받을 때의 작동 방식을 설명합니다.
+
+### ANA Starter — 이 세션의 역할 (두뇌)
 
 이 프로젝트는 fakechat 채널로 대시보드(`http://127.0.0.1:8777`)와 연결된 에이전트 네이티브 앱(ANA)이다.
 `--channels plugin:fakechat@claude-plugins-official`로 기동된 세션이 채널 메시지를 받으면 이 앱의 **두뇌** 역할을 한다.
 
-## 메시지가 도착하면
+### 메시지가 도착하면
+
 채널 메시지는 `<channel source="fakechat" message_id="dash-N">[태그 #N] 사용자 텍스트` 형태로 온다.
 `message_id`(예: `dash-4`) 또는 텍스트의 `#N`에서 **reqId = N**을 뽑아낸다.
 
-## 응답은 반드시 대시보드 API로 — 채널의 reply 툴 쓰지 않기
+### 응답은 반드시 대시보드 API로 — 채널의 reply 툴 쓰지 않기
+
 fakechat의 `reply`/`edit_message` 툴로 답하면 대시보드에는 아무것도 안 뜬다(채널 UI 전용). 대신 curl/fetch로 아래를 호출한다.
 
 - **단순 답변**: `POST http://127.0.0.1:8777/api/agent`  body `{"reqId": N, "text": "답변 내용"}`
@@ -28,12 +309,14 @@ curl -s -X POST http://127.0.0.1:8777/api/agent \
   --data-binary @/tmp/agent_payload.json
 ```
 
-## 참고
+### 참고
+
 - 현재 대시보드 데이터 조회: `GET http://127.0.0.1:8777/api/state`
 - 아이템 스키마(`data/state.json`): `board`(secretary|memo), `channel`, `title`, `sender`, `priority`, `due`, `done`, `summary`
 - 진화(자기개선) 제안 등록: `POST http://127.0.0.1:8777/api/evolve` body `{"proposal":{"type":"improve","title":"...","desc":"..."}}`
 
-## 영단어 학습(라이트너 박스 복습)
+### 영단어 학습(라이트너 박스 복습)
+
 - 조회: `GET /api/vocab` → `{version, words, due}` (`due` = 오늘 복습 대상, `nextReview <= 오늘`).
 - 사용자가 "영단어 ~개 추가해줘" 처럼 요청하면 **승인 없이 바로** 추가한다(단어 추가는 위험도가 낮아 diff 제안 대상이 아님). **`example`은 자연스러운 새 예문 한 문장, `exampleKo`는 그 예문의 한국어 번역을 반드시 함께 채운다** (원문 논문 문장을 그대로 넣지 말고, 학습하기 쉬운 짧고 자연스러운 문장으로 만들 것). **2026-08-28부터는 모든 신규 단어에 `paperTitle`, `paperUrl`, `paperAbstract`를 반드시 포함한다** (학습 효과 향상 목적):
   `POST /api/vocab/add` body `{"words":[{"word":"diligent","meaning":"부지런한","example":"She is diligent about her studies.","exampleKo":"그녀는 공부에 부지런하다.","paperTitle":"논문 제목","paperUrl":"https://arxiv.org/abs/...","paperAbstract":"초록 2~4문장..."}]}` (파일 기반 curl 규칙 동일 적용 — 한글은 명령줄에 직접 넣지 말 것).
