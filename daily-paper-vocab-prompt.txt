@@ -10,12 +10,18 @@
 
 paperTitle은 그 단어가 나온 논문의 제목, paperUrl은 그 논문을 찾을 수 있는 링크(해당 HF papers 페이지에 arXiv 링크(arxiv.org/abs/...)가 보이면 그것을 우선 사용하고, 없으면 https://huggingface.co/papers/<id> 를 사용), paperAbstract는 그 논문 초록을 영어 2~4문장(약 500자 이내)으로 요약 발췌한 것이다(초록 전체를 그대로 복사하지 말고 핵심만 짧게 추릴 것).
 
-Write 툴로 이 10개를 담은 JSON 파일을 작성해라: {"words":[{"word":"...","meaning":"...","example":"...","exampleKo":"...","paperTitle":"...","paperUrl":"...","paperAbstract":"..."}, ...]}
+Write 툴로 이 10개를 담은 JSON 파일을 **logs/vocab_payload_<오늘날짜>.json** 경로에(저장소 루트에 만들지 말 것) 작성해라: {"words":[{"word":"...","meaning":"...","example":"...","exampleKo":"...","paperTitle":"...","paperUrl":"...","paperAbstract":"..."}, ...]}
 (Windows Bash에서 curl -d에 한글을 직접 넣으면 인코딩이 깨지므로 반드시 파일에 먼저 써야 한다.)
 
 그 파일을 아래처럼 전송해라:
 curl -s -X POST http://127.0.0.1:8777/api/vocab/add -H "Content-Type: application/json" --data-binary @그파일경로
 
-완료되면 "오늘의 논문 영단어 10개 추가 완료: <단어 나열>" 형태로 짧게 결과만 출력하고 끝내라. 대시보드 API(/api/agent 등)로 응답을 보낼 필요는 없다(채널 메시지가 아니라 예약 실행이므로).
+**중요: curl의 응답을 꼭 확인해야 한다.** curl 후에:
+1. HTTP 응답 코드가 200인지 확인하고(만약 404/500이면 그 응답을 출력),
+2. 응답 JSON에서 "added"(실제 추가 수)와 "skipped"(서버가 중복으로 건너뛴 수)를 확인해라. 서버가 대소문자 무시 중복을 자동으로 걸러내므로 skipped가 있어 added가 10 미만이면, 새 단어를 더 골라 같은 방식으로 다시 POST해서 합계가 10개가 되게 해라(최대 3회).
+3. 만약 curl 실패(연결 거부, 타임아웃, HTTP 에러 등) 또는 응답이 유효하지 않으면 "FAIL: curl이 실패했습니다 — 서버가 응답하지 않거나 문제가 있습니다. 로그 확인: logs/daily-paper-vocab.log" 를 출력해서 끝내라.
+4. 성공하면(added가 1 이상이면) "오늘의 논문 영단어 10개 추가 완료: <단어 나열>" 형태로만 짧게 출력하고 끝내라.
 
-**다시 강조: curl로 POST /api/vocab/add 를 실제로 호출하는 것까지가 이 작업의 완료 조건이다. 논문 목록 요약만 하고 멈추지 마라.**
+대시보드 API(/api/agent 등)로 응답을 보낼 필요는 없다(채널 메시지가 아니라 예약 실행이므로).
+
+**다시 강조: curl로 POST /api/vocab/add 를 실제로 호출하고, 그 응답을 검증하는 것까지가 이 작업의 완료 조건이다. 응답 검증 없이 "완료됨"을 출력하면 실패로 간주된다.**

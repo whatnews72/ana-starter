@@ -7,4 +7,10 @@ data/feed.json
 data/state.json
 logs/
 vocab_payload.json
+*vocab*payload*.json
+daily_vocab_*.json
+vocab_2*.json
+vocab_daily_*.json
+server.log
+data/vocab.json.bak
 .DS_Store
