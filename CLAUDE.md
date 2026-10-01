@@ -75,8 +75,6 @@ ana-starter/
 │   ├── tunnel.log
 │   └── ...
 │
-├── .github/workflows/
-│   └── auto-deploy.yml       # 매일 자정 크론: data/vocab.json 변경사항 커밋/푸시
 ├── .devcontainer/
 │   └── devcontainer.json     # GitHub Codespaces 설정 (Node 20, 포트 8777 포워딩)
 │
@@ -86,7 +84,11 @@ ana-starter/
 │   ├── start-tunnel.ps1      # Cloudflare 빠른 터널 시작
 │   ├── daily-paper-vocab.bat # 예약 작업: HF 논문 가져오기, 단어 10개 추가
 │   ├── daily-vocab-push.bat  # 예약 작업: POST /api/vocab/push-today
-│   ├── sync-deploy.ps1       # 수동: data/vocab.json을 git 추가/커밋/푸시 (GitHub Pages 재배포)
+│   ├── sync-deploy.ps1       # 예약 작업(05:50): data/vocab.json을 git 커밋/푸시 (GitHub Pages 재배포)
+│   ├── ensure-server.bat     # 서버가 꺼져 있으면 기동 (예약 작업 bat들이 호출)
+│   ├── autostart-server.bat  # 로그온 시 서버 기동 (ANA Server Autostart 작업)
+│   ├── create-*-task.ps1     # 작업 스케줄러 등록 스크립트 (관리자 권한 필요)
+│   ├── setup-automation-tasks.bat # 위 등록 스크립트 일괄 실행 (관리자 권한)
 │   └── show-tunnel-popup.ps1 # 외부 URL + 접근 키 팝업 표시
 │
 ├── run-all.sh                # Bash: server.js + fakechat-bridge.js 함께 실행
@@ -197,10 +199,13 @@ ana-starter/
 - Claude Code를 fakechat 채널 연결 후 실행해 ④⑤ 완료
 - `http://localhost:8777` 또는 Cloudflare 빠른 터널 (run `start-tunnel.ps1` 외부 URL + 접근 키)
 
-**GitHub 자동화:**
-- `.github/workflows/auto-deploy.yml` — 매일 자정 크론 (UTC) `data/vocab.json` 변경사항 커밋/푸시. 작성자: `github-actions[bot]`.
-- `sync-deploy.ps1` — 수동 스크립트: `git add/commit/push data/vocab.json` → GitHub Pages 재배포 트리거.
-- GitHub Pages `https://whatnews72.github.io/ana-starter/` 서빙 (저장소 Settings 설정, `main` 루트에서 서빙).
+**일일 자동화 (Windows 작업 스케줄러, 로컬 시간):**
+- 05:45 `ANA Daily Paper Vocab` — HF 논문에서 단어 10개 추출 → `/api/vocab/add` (서버가 중복 단어를 자동 skip)
+- 05:50 `ANA Vocab Git Sync` — `sync-deploy.ps1`이 `data/vocab.json` 커밋/푸시 → GitHub Pages 반영 (로그: `logs/sync-deploy.log`)
+- 06:00 `ANA Vocab Daily Push` — `/api/vocab/push-today` 푸시 알림
+- 작업 등록 시 반드시 `WorkingDirectory`를 지정할 것 (미지정 시 cwd=System32라 상대경로가 깨짐)
+- 일일 페이로드 JSON은 `logs/vocab_payload_<날짜>.json`에 쓴다 (저장소 루트 금지)
+- GitHub Pages `https://whatnews72.github.io/ana-starter/` 서빙 (`main` 루트). GitHub Actions 워크플로는 사용하지 않음(로컬 데이터는 클라우드에서 볼 수 없음).
 
 **GitHub Codespaces:**
 - `.devcontainer/devcontainer.json` Node 20 이미지, 포트 8777 포워딩 제공
@@ -259,12 +264,8 @@ ANA_REQUIRE_AUTH=1 node server.js
 
 ### 알려진 문제 / 정리 필요한 것
 
-**저장소 루트의 디버그 파일** (삭제 또는 무시 안전):
-- `vocab_payload.json` — 테스팅의 잔여 페이로드 파일
-- `server.log` — `logs/server.log`의 중복
-- `D:AI_Agent만들기ANA Agentana-startervocab_payload.json` — 잘못된 파일명 (Windows 도구가 절대 경로를 리터럴 파일명으로 작성)
-
-개발 잔여물이며 프로젝트의 일부가 아님. `.gitignore`는 `logs/` 및 단일 `vocab_payload.json` 제외; 잘못된 파일명은 gitignored 아니지만 커밋하지 않아야 함.
+- 루트의 `daily_vocab_*.json`, `vocab_*payload*.json`, `server.log`, 깨진 이름의 `D:AI_Agent...vocab_payload.json`은 과거 잔재 파일이며 `.gitignore`로 제외됨(삭제해도 무방).
+- 서버 로그는 `logs/server.out.log` 사용 (과거 `server.log`는 UTF-16으로 깨짐).
 
 ### 관련 저장소
 
