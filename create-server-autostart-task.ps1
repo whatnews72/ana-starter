@@ -45,7 +45,7 @@ try {
         -Force | Out-Null
 
     Write-Host "✓ Task '$taskName' created successfully!" -ForegroundColor Green
-    Write-Host "  Trigger: At system startup" -ForegroundColor Green
+    Write-Host "  Trigger: At user logon" -ForegroundColor Green
     Write-Host "  Status: Ready" -ForegroundColor Green
     exit 0
 } catch {
