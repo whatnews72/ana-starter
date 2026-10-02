@@ -1,5 +1,5 @@
 {
-  "version": 114,
+  "version": 115,
   "words": [
     {
       "id": "w1",
@@ -9,9 +9,9 @@
       "exampleKo": "요즘 스마트폰은 어디에나 있다.",
       "box": 1,
       "streak": 0,
-      "nextReview": "2026-08-28",
+      "nextReview": "2026-10-02",
       "addedAt": "2026-08-07",
-      "lastReview": "2026-08-27"
+      "lastReview": "2026-10-01"
     },
     {
       "id": "w3",
