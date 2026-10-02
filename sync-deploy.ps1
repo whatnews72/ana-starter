@@ -36,7 +36,9 @@ if ([string]::IsNullOrWhiteSpace($status)) {
 # git 네이티브 명령은 예외를 던지지 않으므로 종료 코드를 직접 검사한다
 function Invoke-Git {
     param([string[]]$GitArgs)
-    $out = & git @GitArgs 2>&1 | Out-String
+    # PowerShell 5.1은 stderr 줄을 ErrorRecord로 감싸 "NativeCommandError" 스택을 로그에 남기므로
+    # 각 줄을 문자열로 변환해 git 원문 메시지만 기록한다 (종료 코드로 성공 여부를 판단)
+    $out = (& git @GitArgs 2>&1 | ForEach-Object { "$_" }) -join "`n"
     if ($out.Trim()) { Log-Message ($out.Trim()) }
     if ($LASTEXITCODE -ne 0) {
         Log-Message "git $($GitArgs -join ' ') 실패 (exit $LASTEXITCODE)" "ERROR"
