@@ -69,10 +69,14 @@ ana-starter/
 │   ├── vapid.json            # 웹푸시 VAPID 키쌍 (활성화시, gitignored)
 │   └── push_subs.json        # 푸시 구독 (gitignored)
 │
-├── logs/                     # 런타임 로그 (gitignored)
-│   ├── server.log
+├── logs/                     # 런타임 로그 (gitignored, 모두 UTF-8)
+│   ├── server.log            # start-ana.bat / ensure-server.bat이 기록하는 서버 로그
+│   ├── server.out.log        # autostart-server.bat(로그온 자동 시작)이 기록하는 서버 로그
 │   ├── bridge.log
 │   ├── tunnel.log
+│   ├── sync-deploy.log       # 05:50 git 동기화
+│   ├── daily-paper-vocab.log # 05:45 단어 추가
+│   ├── daily-vocab-push.log  # 06:00 푸시
 │   └── ...
 │
 ├── .devcontainer/
@@ -204,6 +208,9 @@ ana-starter/
 - 05:50 `ANA Vocab Git Sync` — `sync-deploy.ps1`이 `data/vocab.json` 커밋/푸시 → GitHub Pages 반영 (로그: `logs/sync-deploy.log`)
 - 06:00 `ANA Vocab Daily Push` — `/api/vocab/push-today` 푸시 알림
 - 작업 등록 시 반드시 `WorkingDirectory`를 지정할 것 (미지정 시 cwd=System32라 상대경로가 깨짐)
+- 세 작업 모두 `StartWhenAvailable=True`, `DisallowStartIfOnBatteries=False`여야 한다. PC가 꺼져 있던 시각의 실행을 켠 직후 만회하고 배터리에서도 실행된다 (2026-10-03 전까지 Paper Vocab/Push는 꺼져 있어 PC가 꺼진 날 누락됨). 확인: `Get-ScheduledTask -TaskName 'ANA*' | Select TaskName,@{n='Catchup';e={$_.Settings.StartWhenAvailable}}`
+- 로그는 UTF-8로 기록한다. PowerShell 5.1에서 `Tee-Object`/`Out-File`/`>`는 UTF-16이 되므로 `Add-Content -Encoding UTF8`을 쓰고, 읽을 때도 `Get-Content -Encoding UTF8`을 지정한다 (기본 인코딩으로 읽으면 정상 UTF-8 로그도 깨져 보임)
+- git 네이티브 명령의 stderr(경고·진행 메시지)는 PS 5.1에서 `NativeCommandError`로 기록되므로 `2>&1 | ForEach-Object { "$_" }`로 문자열화하고 성공 여부는 `$LASTEXITCODE`로 판단한다 (`sync-deploy.ps1`의 `Invoke-Git`)
 - 일일 페이로드 JSON은 `logs/vocab_payload_<날짜>.json`에 쓴다 (저장소 루트 금지)
 - GitHub Pages `https://whatnews72.github.io/ana-starter/` 서빙 (`main` 루트). GitHub Actions 워크플로는 사용하지 않음(로컬 데이터는 클라우드에서 볼 수 없음).
 
@@ -265,7 +272,7 @@ ANA_REQUIRE_AUTH=1 node server.js
 ### 알려진 문제 / 정리 필요한 것
 
 - 루트의 `daily_vocab_*.json`, `vocab_*payload*.json`, `server.log`, 깨진 이름의 `D:AI_Agent...vocab_payload.json`은 과거 잔재 파일이며 `.gitignore`로 제외됨(삭제해도 무방).
-- 서버 로그는 `logs/server.out.log` 사용 (과거 `server.log`는 UTF-16으로 깨짐).
+- 과거 `Tee-Object`로 만든 `logs/server.log`·`bridge.log`는 UTF-16이었으나 현재는 UTF-8로 변환·수정됨. 서버 실행 중이면 `logs/server.out.log`는 잠겨 있어 UTF-16 잔재가 남을 수 있음(서버 재시작 후 삭제 가능). `sync-deploy.log` 2026-08-29 이전 4줄은 이미 글자가 깨진 상태로 저장됨.
 
 ### 관련 저장소
 
