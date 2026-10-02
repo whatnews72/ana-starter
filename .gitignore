@@ -14,3 +14,6 @@ vocab_daily_*.json
 server.log
 data/vocab.json.bak
 .DS_Store
+
+# Claude 대화 기록 (로컬 전용)
+대화기록_claude*.md
