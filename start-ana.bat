@@ -23,11 +23,11 @@ taskkill /IM cloudflared.exe /F >nul 2>&1
 timeout /t 1 /nobreak >nul
 
 echo Starting server.js...
-start "ANA Server" /D "%ANADIR%" powershell -NoExit -Command "chcp 65001 > $null; $OutputEncoding = [System.Text.Encoding]::UTF8; [Console]::OutputEncoding = [System.Text.Encoding]::UTF8; node server.js 2>&1 | Tee-Object -FilePath '%ANADIR%logs\server.log'"
+start "ANA Server" /D "%ANADIR%" powershell -NoExit -Command "chcp 65001 > $null; $OutputEncoding = [System.Text.Encoding]::UTF8; [Console]::OutputEncoding = [System.Text.Encoding]::UTF8; node server.js 2>&1 | ForEach-Object { $l = [string]$_; $l; Add-Content -Path '%ANADIR%logs\server.log' -Value $l -Encoding UTF8 }"
 timeout /t 2 /nobreak >nul
 
 echo Starting fakechat-bridge.js (channel port %FAKECHAT_PORT%)...
-start "ANA Bridge" /D "%ANADIR%" powershell -NoExit -Command "chcp 65001 > $null; $OutputEncoding = [System.Text.Encoding]::UTF8; [Console]::OutputEncoding = [System.Text.Encoding]::UTF8; $env:FAKECHAT_WS='%FAKECHAT_WS%'; node fakechat-bridge.js 2>&1 | Tee-Object -FilePath '%ANADIR%logs\bridge.log'"
+start "ANA Bridge" /D "%ANADIR%" powershell -NoExit -Command "chcp 65001 > $null; $OutputEncoding = [System.Text.Encoding]::UTF8; [Console]::OutputEncoding = [System.Text.Encoding]::UTF8; $env:FAKECHAT_WS='%FAKECHAT_WS%'; node fakechat-bridge.js 2>&1 | ForEach-Object { $l = [string]$_; $l; Add-Content -Path '%ANADIR%logs\bridge.log' -Value $l -Encoding UTF8 }"
 timeout /t 2 /nobreak >nul
 
 echo Starting Claude Code with fakechat channel (bypass permissions, retries on failure)...
