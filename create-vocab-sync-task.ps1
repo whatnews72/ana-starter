@@ -38,7 +38,9 @@ try {
     # Trigger: Daily at 05:50
     $trigger = New-ScheduledTaskTrigger -Daily -At "05:50"
 
-    $principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" -LogonType Interactive -RunLevel Highest
+    # RunLevel Highest(관리자 토큰)로 실행하면 Git Credential Manager가 일반 세션의 wincredman 자격 증명을
+    # 읽지 못해 push가 인증 오류로 실패한다. git push에는 관리자 권한이 필요 없으므로 Limited로 등록한다
+    $principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" -LogonType Interactive -RunLevel Limited
     $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -Compatibility Win8 -StartWhenAvailable
 
     Register-ScheduledTask -TaskName $taskName `

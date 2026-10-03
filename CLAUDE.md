@@ -207,6 +207,7 @@ ana-starter/
 - 05:45 `ANA Daily Paper Vocab` — HF 논문에서 단어 10개 추출 → `/api/vocab/add` (서버가 중복 단어를 자동 skip)
 - 05:50 `ANA Vocab Git Sync` — `sync-deploy.ps1`이 `data/vocab.json` 커밋/푸시 → GitHub Pages 반영 (로그: `logs/sync-deploy.log`)
 - 06:00 `ANA Vocab Daily Push` — `/api/vocab/push-today` 푸시 알림
+- `ANA Vocab Git Sync`는 `RunLevel Limited`로 등록해야 한다. `Highest`(관리자 토큰)면 Git Credential Manager가 일반 세션의 자격 증명을 읽지 못해 `git push`가 `Unable to persist credentials with the 'wincredman'`로 실패한다 (2026-10-04 05:50 사례). 기존 `Highest` 작업은 관리자 권한 PowerShell에서 `create-vocab-sync-task.ps1`을 다시 실행해야 바뀐다
 - 작업 등록 시 반드시 `WorkingDirectory`를 지정할 것 (미지정 시 cwd=System32라 상대경로가 깨짐)
 - 세 작업 모두 `StartWhenAvailable=True`, `DisallowStartIfOnBatteries=False`여야 한다. PC가 꺼져 있던 시각의 실행을 켠 직후 만회하고 배터리에서도 실행된다 (2026-10-03 전까지 Paper Vocab/Push는 꺼져 있어 PC가 꺼진 날 누락됨). 확인: `Get-ScheduledTask -TaskName 'ANA*' | Select TaskName,@{n='Catchup';e={$_.Settings.StartWhenAvailable}}`
 - 로그는 UTF-8로 기록한다. PowerShell 5.1에서 `Tee-Object`/`Out-File`/`>`는 UTF-16이 되므로 `Add-Content -Encoding UTF8`을 쓰고, 읽을 때도 `Get-Content -Encoding UTF8`을 지정한다 (기본 인코딩으로 읽으면 정상 UTF-8 로그도 깨져 보임)
