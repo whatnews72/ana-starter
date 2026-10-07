@@ -88,6 +88,8 @@ ana-starter/
 │   ├── start-tunnel.ps1      # Cloudflare 빠른 터널 시작
 │   ├── daily-paper-vocab.bat # 예약 작업: HF 논문 가져오기, 단어 10개 추가
 │   ├── daily-vocab-push.bat  # 예약 작업: POST /api/vocab/push-today
+│   ├── daily-vocab-run.ps1   # 일일 파이프라인: 단어 추가(검증/재시도) → sync-deploy → 복습 알림, 실패 시 웹푸시
+│   ├── check-status.ps1      # 상태 확인(읽기 전용): 서버·단어 개수(로컬/원격)·푸시 대기·예약 작업·오늘 실행 결과
 │   ├── sync-deploy.ps1       # 예약 작업(05:50): data/vocab.json을 git 커밋/푸시 (GitHub Pages 재배포)
 │   ├── ensure-server.bat     # 서버가 꺼져 있으면 기동 (예약 작업 bat들이 호출)
 │   ├── autostart-server.bat  # 로그온 시 서버 기동 (ANA Server Autostart 작업)
@@ -207,6 +209,8 @@ ana-starter/
 - 05:45 `ANA Daily Paper Vocab` — HF 논문에서 단어 10개 추출 → `/api/vocab/add` (서버가 중복 단어를 자동 skip)
 - 05:50 `ANA Vocab Git Sync` — `sync-deploy.ps1`이 `data/vocab.json` 커밋/푸시 → GitHub Pages 반영 (로그: `logs/sync-deploy.log`)
 - 06:00 `ANA Vocab Daily Push` — `/api/vocab/push-today` 푸시 알림
+- `daily-paper-vocab.bat`은 `daily-vocab-run.ps1`을 호출하고, 이 스크립트가 서버 확인 → 단어 추가(단어장 개수 증가로 검증, 최대 3회 재시도) → `sync-deploy.ps1`(최대 2회) → 복습 푸시 알림(`/api/vocab/push-today`) 순으로 실행한다. 어느 단계든 실패하면 `/api/push`로 "영단어 자동화 실패" 알림을 보낸다. 로그: `logs/daily-vocab-run.log`. `daily-vocab-push.bat`(06:00 작업)은 알림 중복/순서 꼬임 방지를 위해 아무것도 하지 않는다. 예약 작업끼리는 실행 순서가 보장되지 않아, PC가 꺼져 있다 만회 실행되면 Git Sync가 단어 추가보다 먼저 돌아 SKIP되고 그날 단어가 푸시되지 않았기 때문이다 (2026-10-07 사례). 05:50 `ANA Vocab Git Sync` 작업은 안전망으로 유지한다(변경 없으면 SKIP)
+- 상태 점검은 `powershell -File .\check-status.ps1` (읽기 전용). 서버 응답, 로컬/커밋/원격 단어 개수 비교, 푸시 대기, `ANA*` 예약 작업 결과, 오늘 `daily-vocab-run.log` 완료 여부를 한 번에 보여주고 확인 필요 항목 수를 요약한다
 - `ANA Vocab Git Sync`는 `RunLevel Limited`로 등록해야 한다. `Highest`(관리자 토큰)면 Git Credential Manager가 일반 세션의 자격 증명을 읽지 못해 `git push`가 `Unable to persist credentials with the 'wincredman'`로 실패한다 (2026-10-04 05:50 사례). 기존 `Highest` 작업은 관리자 권한 PowerShell에서 `create-vocab-sync-task.ps1`을 다시 실행해야 바뀐다
 - 작업 등록 시 반드시 `WorkingDirectory`를 지정할 것 (미지정 시 cwd=System32라 상대경로가 깨짐)
 - 세 작업 모두 `StartWhenAvailable=True`, `DisallowStartIfOnBatteries=False`여야 한다. PC가 꺼져 있던 시각의 실행을 켠 직후 만회하고 배터리에서도 실행된다 (2026-10-03 전까지 Paper Vocab/Push는 꺼져 있어 PC가 꺼진 날 누락됨). 확인: `Get-ScheduledTask -TaskName 'ANA*' | Select TaskName,@{n='Catchup';e={$_.Settings.StartWhenAvailable}}`
