@@ -18,6 +18,7 @@ if %ERRORLEVEL% equ 0 (
 
 echo [%date% %time%] Server is not responding. Starting node server.js in the background...
 cd /d "%ANADIR%"
+set "ANA_REQUIRE_AUTH=1"
 start "" /B node server.js >>logs\server.log 2>&1
 
 rem Wait for the server to become responsive (with timeout)

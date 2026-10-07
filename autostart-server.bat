@@ -6,5 +6,7 @@ cd /d "%~dp0"
 if not exist logs mkdir logs
 curl -s -f http://127.0.0.1:8777/api/state >nul 2>&1
 if %ERRORLEVEL% equ 0 exit /b 0
+rem Require login for tunnel traffic (local access stays open). start-ana.bat sets the same.
+set "ANA_REQUIRE_AUTH=1"
 node server.js >> logs\server.out.log 2>&1
 endlocal

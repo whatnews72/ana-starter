@@ -33,7 +33,7 @@ try {
     $action = New-ScheduledTaskAction -Execute $autoStartBat -WorkingDirectory $AnaDir
     # Interactive 로그온 유형은 사용자 로그온이 있어야 실행되므로 부팅(AtStartup) 트리거는 동작하지 않는다 → 로그온 트리거 사용
     $trigger = New-ScheduledTaskTrigger -AtLogOn -User "$env:USERDOMAIN\$env:USERNAME"
-    $principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" -LogonType Interactive -RunLevel Highest
+    $principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" -LogonType Interactive -RunLevel Limited
     $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -Compatibility Win8 -StartWhenAvailable
 
     Register-ScheduledTask -TaskName $taskName `
