@@ -280,6 +280,16 @@ ANA_REQUIRE_AUTH=1 node server.js
 - 루트의 `daily_vocab_*.json`, `vocab_*payload*.json`, `server.log`, 깨진 이름의 `D:AI_Agent...vocab_payload.json`은 과거 잔재 파일이며 `.gitignore`로 제외됨(삭제해도 무방).
 - 과거 `Tee-Object`로 만든 `logs/server.log`·`bridge.log`는 UTF-16이었으나 현재는 UTF-8로 변환·수정됨. 서버 실행 중이면 `logs/server.out.log`는 잠겨 있어 UTF-16 잔재가 남을 수 있음(서버 재시작 후 삭제 가능). `sync-deploy.log` 2026-08-29 이전 4줄은 이미 글자가 깨진 상태로 저장됨.
 
+- **작업 스케줄러 등록 시 "액세스가 거부되었습니다" (HRESULT 0x80070005)** (2026-10-08 사례): `create-*-task.ps1`을 일반 권한 PowerShell에서 실행하면 `Unregister-ScheduledTask`/`Register-ScheduledTask`가 실패한다. 기존에는 오류가 나도 스크립트가 멈추지 않고 "created successfully"를 출력해 실패를 알아채기 어려웠다. `create-server-autostart-task.ps1`은 이제 (1) 관리자 권한이 없으면 안내 후 종료, (2) 삭제/등록에 `-ErrorAction Stop` 적용, (3) 등록 후 `Get-ScheduledTask`로 재확인한다. `create-vocab-sync-task.ps1`에도 동일하게 적용했다(현재 `create-*-task.ps1`은 이 두 개뿐). 새 등록 스크립트를 만들 때도 같은 패턴을 따를 것. 실행 방법: 관리자 권한 PowerShell에서 `cd`와 스크립트 실행을 **별도 줄**(또는 `;`로 구분)로 입력한다. `cd "경로" .\script.ps1`처럼 한 줄에 이으면 `cd`가 스크립트명을 인수로 받아 `Set-Location` 오류가 난다. 등록 후 `(Get-ScheduledTask -TaskName "ANA Server Autostart").Principal.RunLevel`이 `Limited`인지 확인한다.
+
+- **2026-10-09 사례 — 단어 추가 누락 (서버가 꺼진 상태에서 05:45 파이프라인이 멈춤)**
+  - 원인 1: `daily-vocab-run.ps1`이 `cmd /c ensure-server.bat | Out-Null`로 서버를 띄우면, 서버(`start /B node`)가 파이프 핸들을 물려받아 파이프가 닫히지 않아 스크립트가 영원히 대기했다(정황 추정). 이제 `Start-Process`(숨김)로 직접 띄우고 최대 30초 응답을 기다린다. `ensure-server.bat`도 같은 방식으로 바꿨다. 네이티브 명령 출력을 파이프로 받으면서 백그라운드 서버를 띄우지 말 것.
+  - 원인 2(가설, 재현 전): `ANA Server Autostart`가 `Start-Process`로 서버를 띄우고 즉시 끝나면 작업이 결과 0으로 종료되며 스케줄러가 자식(node)을 정리해 서버가 죽는다. 04:52 로그온 때 결과 0, 상태 Ready, 서버 없음이 이 증상이다. 이제 `autostart-server.ps1`이 node를 포그라운드로 실행해 작업이 서버 수명 동안 `Running`을 유지한다(`create-server-autostart-task.ps1`을 관리자 PowerShell에서 재실행해야 반영). 반영 후 정상 상태는 `Running`이다.
+  - 전원 끄기(빠른 시작 포함)를 하면 로그온 세션의 node가 종료되므로 서버를 살리는 경로는 로그온 작업과 05:45 파이프라인뿐이다.
+  - `claude -p` 단계는 15분(`$claudeTimeoutSec`) 시간 제한이 있다. `daily-vocab-run.ps1 -SkipAdd`는 서버 확인/기동까지만 하는 시험 실행이다.
+  - 코드·문서 변경은 자동 커밋되지 않는다(`sync-deploy.ps1`은 `data/vocab.json`만). `check-status.ps1`이 미커밋 파일과 30분 넘게 `Running`인 예약 작업, Autostart 비실행을 경고한다.
+  - 진화 제안(`data/evolve.json`)은 사용자가 진화 탭에서 "수행"을 눌러야 비서 세션(fakechat 채널)이 처리한다. 채널이 내려가 있으면 요청이 쌓이기만 한다.
+
 ### 관련 저장소
 
 - **업스트림 ANA 프레임워크**: [tykimos/agent-native-agent](https://github.com/tykimos/agent-native-agent) — Claude Code 스킬, 디자인 시스템, 아키텍처 원칙

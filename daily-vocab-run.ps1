@@ -3,6 +3,8 @@
 # 어느 단계든 실패하면 로그에 남기고 웹푸시로 실패 알림을 보낸다.
 # 로그: logs\daily-vocab-run.log (UTF-8)
 
+param([switch]$SkipAdd)  # 시험용: 서버 확인/기동까지만 하고 단어 추가 단계 전에 종료
+
 Set-Location -Path $PSScriptRoot
 
 $logDir = Join-Path $PSScriptRoot "logs"
@@ -11,6 +13,7 @@ $logFile = Join-Path $logDir "daily-vocab-run.log"
 $base = "http://127.0.0.1:8777"
 $maxAddAttempts = 3
 $maxSyncAttempts = 2
+$claudeTimeoutSec = 900
 
 function Log-Message {
     param([string]$msg, [string]$level = "INFO")
@@ -43,8 +46,21 @@ function Fail-Run {
 Log-Message "일일 영단어 파이프라인 시작"
 
 # 1) 서버 확인/기동
-cmd /c "`"$PSScriptRoot\ensure-server.bat`"" | Out-Null
-if ($LASTEXITCODE -ne 0) { Fail-Run "서버를 시작하지 못해 단어 추가를 중단했습니다 (logs\server.log 확인)" }
+# 주의: ensure-server.bat을 "| Out-Null"로 호출하면, 서버(node)가 파이프 핸들을 물려받아
+# 서버가 살아 있는 동안 파이프가 안 닫혀 스크립트가 영원히 멈춘다 (2026-10-09 사례).
+# 그래서 PowerShell에서 직접 서버를 띄우고(핸들 비상속), 응답할 때까지 최대 30초 기다린다.
+function Test-Server {
+    try { Invoke-WebRequest -Uri "$base/api/state" -UseBasicParsing -TimeoutSec 3 | Out-Null; return $true } catch { return $false }
+}
+if (-not (Test-Server)) {
+    Log-Message "서버가 응답하지 않아 기동합니다" "WARN"
+    $env:ANA_REQUIRE_AUTH = "1"
+    Start-Process -FilePath "node" -ArgumentList "server.js" -WorkingDirectory $PSScriptRoot -WindowStyle Hidden `
+        -RedirectStandardOutput (Join-Path $logDir "server.pipeline.out.log") -RedirectStandardError (Join-Path $logDir "server.pipeline.err.log")
+    for ($w = 0; $w -lt 30 -and -not (Test-Server); $w++) { Start-Sleep -Seconds 1 }
+    if (-not (Test-Server)) { Fail-Run "서버를 시작하지 못해 단어 추가를 중단했습니다 (logs\server.pipeline.err.log 확인)" }
+    Log-Message "서버 기동 완료"
+}
 
 # 2) 단어 추가 (헤드리스 Claude) - 단어장 개수가 늘었는지로 성공을 검증하고, 실패하면 재시도
 $before = Get-VocabCount
@@ -55,10 +71,17 @@ $paperLog = Join-Path $logDir "daily-paper-vocab.log"
 $added = 0
 for ($i = 1; $i -le $maxAddAttempts -and $added -le 0; $i++) {
     Log-Message "단어 추가 시도 $i/$maxAddAttempts (현재 $before 개)"
-    cmd /c "`"$claude`" -p --permission-mode bypassPermissions --effort high < `"$prompt`" >> `"$paperLog`" 2>&1"
+    if ($SkipAdd) { Log-Message "SkipAdd: 단어 추가 단계를 건너뜁니다 (시험 실행)" "WARN"; exit 0 }
+    # 15분 안에 안 끝나면 claude를 종료하고 다음 시도로 넘어간다 (멈춤이 작업 전체를 막지 않게)
+    $proc = Start-Process -FilePath "cmd.exe" -ArgumentList "/c `"`"$claude`" -p --permission-mode bypassPermissions --effort high < `"$prompt`" >> `"$paperLog`" 2>&1`"" -WindowStyle Hidden -PassThru
+    if (-not $proc.WaitForExit($claudeTimeoutSec * 1000)) {
+        Log-Message "claude가 $claudeTimeoutSec 초 안에 끝나지 않아 종료합니다" "WARN"
+        & taskkill /PID $proc.Id /T /F | Out-Null
+        $exitCode = "timeout"
+    } else { $exitCode = $proc.ExitCode }
     $after = Get-VocabCount
     if ($after -ge 0) { $added = $after - $before }
-    Log-Message "추가된 단어: $added 개 (claude exit $LASTEXITCODE)"
+    Log-Message "추가된 단어: $added 개 (claude exit $exitCode)"
 }
 if ($added -le 0) { Fail-Run "단어 추가 $maxAddAttempts 회 모두 실패 (추가 0개). logs\daily-paper-vocab.log 확인" }
 if ($added -lt 10) { Log-Message "10개 미만($added 개)만 추가되었습니다" "WARN" }

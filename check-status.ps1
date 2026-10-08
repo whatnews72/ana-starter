@@ -42,6 +42,10 @@ $ahead = git rev-list --count origin/main..HEAD 2>$null
 if ($dirty) { Show "WARN" "푸시 대기" "data/vocab.json이 커밋되지 않았습니다 (sync-deploy.ps1 실행 필요)" }
 elseif ($ahead -gt 0) { Show "WARN" "푸시 대기" "푸시되지 않은 커밋 $ahead 개" }
 else { Show "OK" "푸시 대기" "없음 (GitHub Pages와 동기화됨)" }
+# 코드·문서 변경은 자동 커밋되지 않는다(sync-deploy.ps1은 vocab.json만). 이 PC에만 있는 변경을 경고한다
+$others = @(git status -s | Where-Object { $_ -notmatch 'data/vocab\.json' })
+if ($others.Count -gt 0) { Show "WARN" "미커밋 파일" ("{0}개: {1}" -f $others.Count, (($others | ForEach-Object { $_.Substring(3) }) -join ", ")) }
+else { Show "OK" "미커밋 파일" "없음" }
 $last = git log origin/main -1 --format='%h %ad %s' --date=format:'%m-%d %H:%M' 2>$null
 Write-Host "       최근 원격 커밋: $last"
 
@@ -50,6 +54,9 @@ Write-Host "--- 예약 작업 ---"
 Get-ScheduledTask -TaskName 'ANA*' -ErrorAction SilentlyContinue | ForEach-Object {
     $i = Get-ScheduledTaskInfo $_
     $lvl = if ($i.LastTaskResult -eq 0 -or $i.LastTaskResult -eq 267011) { "OK" } else { "FAIL" }
+    # 오래 Running이면 멈춘 것이다 (2026-10-09: 파이프라인이 서버 기동 단계에서 멈춤). Autostart는 서버 수명 동안 Running이 정상
+    if ($_.State -eq 'Running' -and $_.TaskName -ne 'ANA Server Autostart' -and $i.LastRunTime -lt (Get-Date).AddMinutes(-30)) { $lvl = "FAIL" }
+    if ($_.TaskName -eq 'ANA Server Autostart' -and $_.State -ne 'Running' -and $localJson) { $lvl = "WARN" }
     Show $lvl $_.TaskName ("상태 {0} / 마지막 {1:MM-dd HH:mm} / 결과 {2} / 다음 {3:MM-dd HH:mm}" -f $_.State, $i.LastRunTime, $i.LastTaskResult, $i.NextRunTime)
 }
 

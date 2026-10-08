@@ -6,6 +6,14 @@ param(
     [string]$AnaDir = (Split-Path -Parent $MyInvocation.MyCommand.Path)
 )
 
+# 관리자 권한 확인: 작업 스케줄러 등록/삭제에는 관리자 권한이 필요하다 (없으면 0x80070005 액세스 거부)
+$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+if (-not $isAdmin) {
+    Write-Host "ERROR: Administrator privileges required." -ForegroundColor Red
+    Write-Host "Right-click PowerShell -> 'Run as administrator', then run this script again." -ForegroundColor Yellow
+    exit 1
+}
+
 $taskName = "ANA Vocab Git Sync"
 $syncScript = Join-Path $AnaDir "sync-deploy.ps1"
 
@@ -23,7 +31,13 @@ if (!(Test-Path $syncScript)) {
 $existingTask = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
 if ($null -ne $existingTask) {
     Write-Host "Existing task found. Removing..." -ForegroundColor Yellow
-    Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
+    try {
+        # -ErrorAction Stop: 삭제 실패 시 성공 메시지가 출력되지 않도록 즉시 중단
+        Unregister-ScheduledTask -TaskName $taskName -Confirm:$false -ErrorAction Stop
+    } catch {
+        Write-Host "ERROR: Failed to remove existing task: $_" -ForegroundColor Red
+        exit 1
+    }
     Start-Sleep -Seconds 1
 }
 
@@ -49,7 +63,12 @@ try {
         -Principal $principal `
         -Settings $settings `
         -Description "Commits and pushes daily vocab words to GitHub (runs at 05:50, 5 min after word fetch)" `
-        -Force | Out-Null
+        -Force -ErrorAction Stop | Out-Null
+
+    # 실제로 등록됐는지 재확인 (등록 실패를 성공으로 오인하지 않도록)
+    if ($null -eq (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue)) {
+        throw "Task was not found after registration."
+    }
 
     Write-Host "✓ Task '$taskName' created successfully!" -ForegroundColor Green
     Write-Host "  Trigger: Daily at 05:50" -ForegroundColor Green

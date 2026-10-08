@@ -19,7 +19,9 @@ if %ERRORLEVEL% equ 0 (
 echo [%date% %time%] Server is not responding. Starting node server.js in the background...
 cd /d "%ANADIR%"
 set "ANA_REQUIRE_AUTH=1"
-start "" /B node server.js >>logs\server.log 2>&1
+rem Use Start-Process (not "start /B"): a /B child inherits the caller's stdout pipe, so a caller doing
+rem "ensure-server.bat | Out-Null" would hang for as long as the server lives (2026-10-09 incident).
+powershell -NoProfile -Command "Start-Process -FilePath node -ArgumentList 'server.js' -WorkingDirectory '%ANADIR%' -WindowStyle Hidden -RedirectStandardOutput 'logs\server.log' -RedirectStandardError 'logs\server.err.log'"
 
 rem Wait for the server to become responsive (with timeout)
 echo [%date% %time%] Waiting for server to start (max %TIMEOUT_SECS% seconds)...
